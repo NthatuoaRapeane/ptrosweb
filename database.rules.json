@@ -1,0 +1,24 @@
+{
+  "rules": {
+    "tracks": {
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth.uid === $uid"
+      }
+    },
+    "deliveryTracks": {
+      "$deliveryId": {
+        ".read": true,
+        ".write": "auth != null"
+      }
+    },
+    "deliveryRouteBuffer": {
+      "$deliveryId": {
+        ".read": "auth != null",
+        "$pointId": {
+          ".write": "auth != null"
+        }
+      }
+    }
+  }
+}
