@@ -1,0 +1,179 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+
+  /* 🎨 Professional Delivery App Color Scheme */
+
+  /* Primary Colors - Blue (Trust & Reliability) */
+  --primary: #2563eb;
+  --primary-dark: #1e40af;
+  --primary-light: #3b82f6;
+  --primary-lighter: #60a5fa;
+  --primary-bg: #eff6ff;
+
+  /* Accent Colors - Orange (Speed & Action) */
+  --accent: #f59e0b;
+  --accent-dark: #d97706;
+  --accent-light: #fbbf24;
+  --accent-bg: #fef3c7;
+
+  /* Success Colors - Green (Delivery & Completion) */
+  --success: #10b981;
+  --success-dark: #059669;
+  --success-light: #34d399;
+  --success-bg: #d1fae5;
+
+  /* Error Colors - Red (Warnings & Errors) */
+  --error: #ef4444;
+  --error-dark: #dc2626;
+  --error-light: #f87171;
+  --error-bg: #fee2e2;
+
+  /* Warning Colors - Yellow */
+  --warning: #f59e0b;
+  --warning-dark: #d97706;
+  --warning-light: #fbbf24;
+  --warning-bg: #fef3c7;
+
+  /* Info Colors - Light Blue */
+  --info: #3b82f6;
+  --info-dark: #2563eb;
+  --info-light: #60a5fa;
+  --info-bg: #dbeafe;
+
+  /* Neutral Colors (Clean UI) */
+  --bg: #f9fafb;
+  --bg-dark: #f3f4f6;
+  --card-bg: #ffffff;
+
+  --text: #111827;
+  --text-light: #6b7280;
+  --text-lighter: #9ca3af;
+
+  --border: #e5e7eb;
+  --border-light: #f3f4f6;
+
+  /* Dark Mode Support */
+  --dark-bg: #111827;
+  --dark-card: #1f2937;
+  --dark-text: #f9fafb;
+  --dark-text-secondary: #9ca3af;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Simple global styles */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+/* Utility Classes */
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark);
+}
+
+.btn-accent {
+  background-color: var(--accent);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-accent:hover {
+  background-color: var(--accent-dark);
+}
+
+.btn-success {
+  background-color: var(--success);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-success:hover {
+  background-color: var(--success-dark);
+}
+
+.card {
+  background-color: var(--card-bg);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+}
+
+.badge-success {
+  background-color: var(--success-bg);
+  color: var(--success-dark);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-warning {
+  background-color: var(--warning-bg);
+  color: var(--warning-dark);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-error {
+  background-color: var(--error-bg);
+  color: var(--error-dark);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-info {
+  background-color: var(--info-bg);
+  color: var(--info-dark);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}

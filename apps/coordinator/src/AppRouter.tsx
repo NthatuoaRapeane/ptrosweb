@@ -1,5 +1,5 @@
 // apps/coordinator/src/AppRouter.tsx
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { db } from "@config";
 import { doc, getDoc } from "firebase/firestore";
@@ -25,8 +25,13 @@ type Props = {
 };
 
 export default function AppRouter({ user }: Props) {
+  const location = useLocation();
   const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  const isTrackingRoute = /^\/deliveries\/[^/]+\/track$/.test(
+    location.pathname,
+  );
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -48,6 +53,17 @@ export default function AppRouter({ user }: Props) {
           <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading dashboard...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (isTrackingRoute) {
+    return (
+      <div className="min-h-screen bg-black">
+        <Routes>
+          <Route path="/deliveries/:id/track" element={<DeliveryTrackingMap />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
       </div>
     );
   }

@@ -157,6 +157,22 @@ export default function DeliveryTrackingMap() {
   const [pickupToDeliveryPath, setPickupToDeliveryPath] = useState<
     google.maps.LatLng[] | null
   >(null);
+  const [showLegend, setShowLegend] = useState(false);
+  const [showControls, setShowControls] = useState(false);
+  const [isBrowserFullscreen, setIsBrowserFullscreen] = useState(false);
+  const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
+
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      setIsBrowserFullscreen(Boolean(document.fullscreenElement));
+    };
+
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", onFullscreenChange);
+    };
+  }, []);
 
   useEffect(() => {
     if (!id) {
@@ -375,6 +391,52 @@ export default function DeliveryTrackingMap() {
     lng: parseFloat(delivery?.currentLocation?.lng?.toString() || "28.2336"),
   };
 
+  useEffect(() => {
+    if (!mapInstance || !window.google?.maps) return;
+
+    const bounds = new window.google.maps.LatLngBounds();
+    let hasBounds = false;
+
+    if (carrierLocation) {
+      bounds.extend({ lat: carrierLocation.lat, lng: carrierLocation.lng });
+      hasBounds = true;
+    }
+
+    if (delivery?.pickupLocation) {
+      bounds.extend({
+        lat: delivery.pickupLocation.lat,
+        lng: delivery.pickupLocation.lng,
+      });
+      hasBounds = true;
+    }
+
+    if (delivery?.deliveryLocation) {
+      bounds.extend({
+        lat: delivery.deliveryLocation.lat,
+        lng: delivery.deliveryLocation.lng,
+      });
+      hasBounds = true;
+    }
+
+    if (delivery?.currentLocation) {
+      bounds.extend({
+        lat: delivery.currentLocation.lat,
+        lng: delivery.currentLocation.lng,
+      });
+      hasBounds = true;
+    }
+
+    if (hasBounds) {
+      mapInstance.fitBounds(bounds, 80);
+    }
+  }, [
+    mapInstance,
+    carrierLocation,
+    delivery?.pickupLocation,
+    delivery?.deliveryLocation,
+    delivery?.currentLocation,
+  ]);
+
   const routeSegments = useMemo(() => {
     const planned = delivery?.route?.polyline
       ? decodePolyline(delivery.route.polyline)
@@ -528,6 +590,19 @@ export default function DeliveryTrackingMap() {
     }
   }, [delivery?.status]);
 
+  const toggleBrowserFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (error) {
+      console.error("Failed to toggle fullscreen:", error);
+      toast.error("Could not toggle fullscreen mode.");
+    }
+  };
+
   const recommendNextCarrier = async () => {
     if (!delivery || !carrierLocation) return;
     setRecommending(true);
@@ -643,10 +718,10 @@ export default function DeliveryTrackingMap() {
   }
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-[100dvh] flex flex-col bg-slate-950">
       <Toaster position="top-right" />
 
-      <div className="bg-white shadow p-4 z-10">
+      <div className="bg-white/95 backdrop-blur shadow p-4 z-10">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-800">
@@ -656,16 +731,39 @@ export default function DeliveryTrackingMap() {
               {getStatusLabel(delivery.status)}
             </p>
           </div>
-          <button
-            onClick={() => navigate(-1)}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
-          >
-            ← Back
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowControls((prev) => !prev)}
+              className="px-3 py-2 text-sm rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200"
+            >
+              {showControls ? "Hide Controls" : "Show Controls"}
+            </button>
+            <button
+              onClick={() => setShowLegend((prev) => !prev)}
+              className="px-3 py-2 text-sm rounded-lg bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
+              title="Toggle route legend"
+            >
+              🧭 Legend
+            </button>
+            <button
+              onClick={toggleBrowserFullscreen}
+              className="px-3 py-2 text-sm rounded-lg bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+              title="Toggle fullscreen"
+            >
+              {isBrowserFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+            </button>
+            <button
+              onClick={() => navigate(-1)}
+              className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
+            >
+              ← Back
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="bg-white border-t border-b px-4 py-3 grid grid-cols-1 lg:grid-cols-4 gap-3 text-sm">
+      {showControls && (
+        <div className="bg-white border-t border-b px-4 py-3 grid grid-cols-1 lg:grid-cols-4 gap-3 text-sm">
         <div className="lg:col-span-2">
           <p className="font-semibold text-gray-700">Trip Replay</p>
           <input
@@ -725,9 +823,10 @@ export default function DeliveryTrackingMap() {
             </div>
           )}
         </div>
-      </div>
+          </div>
+        )}
 
-      {reviewMode && (
+        {showControls && reviewMode && (
         <div className="bg-red-50 border-b border-red-200 px-4 py-3 text-sm grid grid-cols-1 lg:grid-cols-4 gap-3">
           <select
             value={routeIssueCategory}
@@ -779,8 +878,16 @@ export default function DeliveryTrackingMap() {
               zoom={15}
               center={mapCenter}
               onClick={onMapClick}
+              onLoad={(map) => setMapInstance(map)}
               mapContainerStyle={{ height: "100%", width: "100%" }}
-              options={{ disableDefaultUI: false }}
+              options={{
+                disableDefaultUI: false,
+                fullscreenControl: true,
+                streetViewControl: false,
+                mapTypeControl: true,
+                zoomControl: true,
+                gestureHandling: "greedy",
+              }}
             >
               {/* Carrier to Pickup Path (Yellow with low opacity) */}
               {carrierToPickupPath && carrierToPickupPath.length > 1 && (
@@ -1035,61 +1142,72 @@ export default function DeliveryTrackingMap() {
             </GoogleMap>
 
             {/* Map Legend */}
-            <MapLegend
-              title="Route Legend"
-              items={[
-                {
-                  color: "#fbbf24",
-                  opacity: 0.4,
-                  label: "Carrier → Pickup",
-                  description: "Expected path from carrier to pickup location",
-                },
-                {
-                  color: "#fb923c",
-                  opacity: 0.4,
-                  label: "Pickup → Delivery",
-                  description: "Expected path from pickup to delivery",
-                },
-                {
-                  color: activeRouteColor,
-                  opacity: 1,
-                  label: "Active Route",
-                  description: "Current live route in progress",
-                },
-                {
-                  color: "#ef4444",
-                  opacity: 0.9,
-                  label: "Learned Shortcut",
-                  description: "Carrier-reported shortcut candidates",
-                },
-                {
-                  color: "#dc2626",
-                  opacity: 1,
-                  label: "Rejected/Blocked Segment",
-                  description: "Coordinator-reviewed unavailable path",
-                },
-                ...ROUTE_COLORS.slice(
-                  0,
-                  Math.min(3, visibleSnapshotSegments.length),
-                ).map((color, i) => ({
-                  color,
-                  opacity: 0.95,
-                  label: `Snapshot ${i + 1}`,
-                  description: "Historical route segment",
-                })),
-                {
-                  color: "#f59e0b",
-                  opacity: 0.9,
-                  label: "Planned Route",
-                  description: "Original calculated route",
-                },
-              ]}
-            />
+            {showLegend && (
+              <MapLegend
+                title="Route Legend"
+                className="top-16 right-4"
+                items={[
+                  {
+                    color: "#fbbf24",
+                    opacity: 0.4,
+                    label: "Carrier → Pickup",
+                    description: "Expected path from carrier to pickup location",
+                  },
+                  {
+                    color: "#fb923c",
+                    opacity: 0.4,
+                    label: "Pickup → Delivery",
+                    description: "Expected path from pickup to delivery",
+                  },
+                  {
+                    color: activeRouteColor,
+                    opacity: 1,
+                    label: "Active Route",
+                    description: "Current live route in progress",
+                  },
+                  {
+                    color: "#ef4444",
+                    opacity: 0.9,
+                    label: "Learned Shortcut",
+                    description: "Carrier-reported shortcut candidates",
+                  },
+                  {
+                    color: "#dc2626",
+                    opacity: 1,
+                    label: "Rejected/Blocked Segment",
+                    description: "Coordinator-reviewed unavailable path",
+                  },
+                  ...ROUTE_COLORS.slice(
+                    0,
+                    Math.min(3, visibleSnapshotSegments.length),
+                  ).map((color, i) => ({
+                    color,
+                    opacity: 0.95,
+                    label: `Snapshot ${i + 1}`,
+                    description: "Historical route segment",
+                  })),
+                  {
+                    color: "#f59e0b",
+                    opacity: 0.9,
+                    label: "Planned Route",
+                    description: "Original calculated route",
+                  },
+                ]}
+              />
+            )}
+
+            <button
+              onClick={() => setShowLegend((prev) => !prev)}
+              className="absolute top-4 left-4 z-20 bg-white text-slate-700 shadow-md border border-slate-200 rounded-full w-11 h-11 flex items-center justify-center hover:bg-slate-100"
+              title={showLegend ? "Hide route legend" : "Show route legend"}
+            >
+              🧭
+            </button>
           </>
         )}
       </div>
 
-      {(delivery.routeFeedback?.length || learnedSegments.length) && (
+      {showControls && (delivery.routeFeedback?.length || learnedSegments.length) && (
         <div className="bg-white border-t px-4 py-3 text-xs text-gray-600 grid grid-cols-1 lg:grid-cols-2 gap-3">
           <div>
             <p className="font-semibold text-gray-700 mb-1">
@@ -1120,7 +1238,8 @@ export default function DeliveryTrackingMap() {
         </div>
       )}
 
-      <div className="bg-white shadow p-4 border-t">
+      {showControls && (
+        <div className="bg-white/95 backdrop-blur shadow p-4 border-t">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
           <div>
             <p className="text-sm text-gray-500 font-medium">PICKUP</p>
@@ -1153,7 +1272,8 @@ export default function DeliveryTrackingMap() {
               />
             </div>
           )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

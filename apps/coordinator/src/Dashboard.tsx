@@ -1,7 +1,7 @@
 // apps/coordinator/src/Dashboard.tsx - UPDATED
 import { useState, useEffect } from "react";
 import { db } from "@config";
-import { collection, query, where, getDocs, Timestamp } from "firebase/firestore";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
 
 type Props = {
   user: any;
@@ -27,62 +27,99 @@ export default function Dashboard({ user, userProfile }: Props) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchDashboardStats();
-    // Refresh stats every 30 seconds to keep them current
-    const interval = setInterval(fetchDashboardStats, 30000);
-    return () => clearInterval(interval);
-  }, []);
+    const activeDeliveryStatuses = new Set([
+      "created",
+      "pending",
+      "assigned",
+      "accepted",
+      "picked_up",
+      "in_transit",
+      "out_for_delivery",
+    ]);
 
-  const fetchDashboardStats = async () => {
-    try {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const todayTimestamp = Timestamp.fromDate(today);
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
 
-      // Fetch active deliveries (pending, assigned, picked up, in transit)
-      const activeDeliveriesQuery = query(
-        collection(db, "deliveries"),
-        where("status", "in", ["pending", "assigned", "picked_up", "in_transit"])
-      );
-      const activeDeliveriesSnapshot = await getDocs(activeDeliveriesQuery);
+    let carriersCache: any[] = [];
+    let deliveriesCache: any[] = [];
 
-      // Fetch active carriers (approved and active status)
-      const activeCarriersQuery = query(
-        collection(db, "users"),
-        where("role", "==", "carrier"),
-        where("isApproved", "==", true),
-        where("status", "==", "active")
-      );
-      const activeCarriersSnapshot = await getDocs(activeCarriersQuery);
+    const recomputeStats = () => {
+      const activeCarriers = carriersCache.filter((carrier) => {
+        const status = String(carrier?.status || "").toLowerCase();
+        const isApproved = Boolean(carrier?.isApproved);
+        return isApproved && (status === "active" || status === "busy");
+      }).length;
 
-      // Fetch completed deliveries today (status = delivered and createdAt is today)
-      const completedTodayQuery = query(
-        collection(db, "deliveries"),
-        where("status", "==", "delivered"),
-        where("createdAt", ">=", todayTimestamp)
-      );
-      const completedTodaySnapshot = await getDocs(completedTodayQuery);
+      const pendingCarriers = carriersCache.filter(
+        (carrier) => !carrier?.isApproved,
+      ).length;
 
-      // Calculate revenue today from paymentAmount field
+      const activeDeliveries = deliveriesCache.filter((delivery) =>
+        activeDeliveryStatuses.has(String(delivery?.status || "").toLowerCase()),
+      ).length;
+
+      let completedToday = 0;
       let revenueToday = 0;
-      completedTodaySnapshot.forEach((doc) => {
-        const data = doc.data();
-        revenueToday += data.paymentAmount || 0;
+
+      deliveriesCache.forEach((delivery) => {
+        const status = String(delivery?.status || "").toLowerCase();
+        if (status !== "delivered") return;
+
+        const deliveredAtRaw =
+          delivery?.deliveredAt || delivery?.deliveryTime || delivery?.updatedAt;
+
+        const deliveredAtDate = deliveredAtRaw?.toDate
+          ? deliveredAtRaw.toDate()
+          : deliveredAtRaw instanceof Date
+            ? deliveredAtRaw
+            : null;
+
+        if (deliveredAtDate && deliveredAtDate >= startOfToday) {
+          completedToday += 1;
+          revenueToday += Number(delivery?.paymentAmount || 0);
+        }
       });
 
       setStats({
-        activeDeliveries: activeDeliveriesSnapshot.size,
-        activeCarriers: activeCarriersSnapshot.size,
-        completedToday: completedTodaySnapshot.size,
+        activeDeliveries,
+        activeCarriers,
+        completedToday,
         revenueToday: Math.round(revenueToday),
-        pendingCarriers: 0,
+        pendingCarriers,
       });
-    } catch (error) {
-      console.error("Error fetching dashboard stats:", error);
-    } finally {
       setLoading(false);
-    }
-  };
+    };
+
+    const usersQuery = query(collection(db, "users"), where("role", "==", "carrier"));
+    const unsubUsers = onSnapshot(
+      usersQuery,
+      (snapshot) => {
+        carriersCache = snapshot.docs.map((d) => d.data());
+        recomputeStats();
+      },
+      (error) => {
+        console.error("Error loading carrier stats:", error);
+        setLoading(false);
+      },
+    );
+
+    const unsubDeliveries = onSnapshot(
+      collection(db, "deliveries"),
+      (snapshot) => {
+        deliveriesCache = snapshot.docs.map((d) => d.data());
+        recomputeStats();
+      },
+      (error) => {
+        console.error("Error loading delivery stats:", error);
+        setLoading(false);
+      },
+    );
+
+    return () => {
+      unsubUsers();
+      unsubDeliveries();
+    };
+  }, []);
   const quickActions = [
     {
       label: "Create Delivery",
