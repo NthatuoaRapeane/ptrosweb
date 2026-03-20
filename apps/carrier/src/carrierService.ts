@@ -8,6 +8,7 @@ import {
   getDocs,
   doc,
   updateDoc,
+  increment,
   Timestamp,
   orderBy,
   onSnapshot,
@@ -520,12 +521,26 @@ export class CarrierService {
       if (!deliveryDoc.empty) {
         const data = deliveryDoc.docs[0].data();
         if (data.otpCode === otpCode) {
+          const deliveryEarnings = data.earnings || data.estimatedEarnings || 0;
           await updateDoc(deliveryRef, {
             status: "delivered",
             otpVerified: true,
             deliveryTime: Timestamp.now(),
             updatedAt: Timestamp.now(),
           });
+          // Update carrier stats on their user document
+          const user = auth.currentUser;
+          if (user) {
+            try {
+              await updateDoc(doc(db, "users", user.uid), {
+                completedDeliveries: increment(1),
+                earnings: increment(deliveryEarnings),
+                updatedAt: Timestamp.now(),
+              });
+            } catch (e) {
+              console.error("Error updating carrier stats:", e);
+            }
+          }
           return true;
         }
       }
