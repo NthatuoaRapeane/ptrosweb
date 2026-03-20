@@ -114,6 +114,14 @@ export default function CarrierLiveTrack() {
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+    navigate("/");
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (!currentUser) {
@@ -248,13 +256,16 @@ export default function CarrierLiveTrack() {
         destination,
         travelMode: window.google.maps.TravelMode.DRIVING,
       },
-      (result, status) => {
+      (
+        result: google.maps.DirectionsResult | null,
+        status: google.maps.DirectionsStatus,
+      ) => {
         if (
           status === window.google.maps.DirectionsStatus.OK &&
           result?.routes?.[0]?.overview_path
         ) {
           setGoogleDirections(result);
-          const mappedPath = result.routes[0].overview_path.map((point) => ({
+          const mappedPath = result.routes[0].overview_path.map((point: google.maps.LatLng) => ({
             lat: point.lat(),
             lng: point.lng(),
           }));
@@ -309,10 +320,10 @@ export default function CarrierLiveTrack() {
 
   if (!authReady || loadingDelivery) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-6">
+      <div className="min-h-screen bg-slate-50 text-slate-900 flex items-center justify-center p-6">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="mt-4 text-sm text-slate-300">Loading live route map...</p>
+          <p className="mt-4 text-sm text-slate-600">Loading live route map...</p>
         </div>
       </div>
     );
@@ -320,15 +331,15 @@ export default function CarrierLiveTrack() {
 
   if (!authorized) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-6">
-        <div className="max-w-md w-full rounded-2xl border border-red-500/30 bg-red-950/40 p-6 text-center">
-          <h1 className="text-2xl font-bold text-red-200">Access denied</h1>
-          <p className="mt-3 text-sm text-red-100/80">
+      <div className="min-h-screen bg-slate-50 text-slate-900 flex items-center justify-center p-6">
+        <div className="max-w-md w-full rounded-2xl border border-red-200 bg-red-50 p-6 text-center">
+          <h1 className="text-2xl font-bold text-red-700">Access denied</h1>
+          <p className="mt-3 text-sm text-red-700/90">
             {error || "Only carrier accounts can open this live tracking page."}
           </p>
           <button
             onClick={() => navigate("/")}
-            className="mt-5 rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20"
+            className="mt-5 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500"
           >
             Back to carrier app
           </button>
@@ -339,10 +350,10 @@ export default function CarrierLiveTrack() {
 
   if (error || !delivery) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-6">
-        <div className="max-w-md w-full rounded-2xl border border-slate-700 bg-slate-900 p-6 text-center">
+      <div className="min-h-screen bg-slate-50 text-slate-900 flex items-center justify-center p-6">
+        <div className="max-w-md w-full rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
           <h1 className="text-2xl font-bold">Live track unavailable</h1>
-          <p className="mt-3 text-sm text-slate-300">
+          <p className="mt-3 text-sm text-slate-600">
             {error || "The requested delivery could not be loaded."}
           </p>
           <button
@@ -357,29 +368,29 @@ export default function CarrierLiveTrack() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <div className="border-b border-slate-800 bg-slate-900/95 backdrop-blur sticky top-0 z-20">
+    <div className="min-h-screen bg-slate-50 text-slate-900">
+      <div className="border-b border-slate-200 bg-white/95 backdrop-blur sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => navigate(-1)}
-              className="rounded-lg bg-white/10 px-3 py-2 text-sm font-semibold hover:bg-white/20"
+              onClick={handleBack}
+              className="rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200"
             >
               ← Back
             </button>
             <div>
               <h1 className="text-2xl font-bold">Carrier Live Track</h1>
-              <p className="text-sm text-slate-300">
+              <p className="text-sm text-slate-600">
                 Route from pickup to destination with your live position
               </p>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 text-sm">
-            <span className="rounded-full bg-cyan-500/20 px-3 py-1 font-semibold text-cyan-200 border border-cyan-400/20">
+            <span className="rounded-full bg-cyan-100 px-3 py-1 font-semibold text-cyan-800 border border-cyan-200">
               {delivery.trackingCode || delivery.id}
             </span>
-            <span className="rounded-full bg-white/10 px-3 py-1 font-semibold text-slate-100 border border-white/10">
+            <span className="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700 border border-slate-200">
               {formatStatus(delivery.status)}
             </span>
           </div>
@@ -387,23 +398,23 @@ export default function CarrierLiveTrack() {
       </div>
 
       <div className="max-w-7xl mx-auto p-4 grid grid-cols-1 xl:grid-cols-[340px,1fr] gap-4">
-        <aside className="rounded-2xl border border-slate-800 bg-slate-900 p-5 space-y-4">
-          <div className="rounded-xl bg-slate-800/70 p-4 border border-slate-700">
-            <p className="text-xs uppercase tracking-wide text-slate-400 mb-2">Pickup</p>
+        <aside className="rounded-2xl border border-slate-200 bg-white p-5 space-y-4 shadow-sm">
+          <div className="rounded-xl bg-slate-50 p-4 border border-slate-200">
+            <p className="text-xs uppercase tracking-wide text-slate-500 mb-2">Pickup</p>
             <p className="font-semibold text-amber-200">
               {delivery.pickupAddress || "Pickup address unavailable"}
             </p>
           </div>
 
-          <div className="rounded-xl bg-slate-800/70 p-4 border border-slate-700">
-            <p className="text-xs uppercase tracking-wide text-slate-400 mb-2">Destination</p>
+          <div className="rounded-xl bg-slate-50 p-4 border border-slate-200">
+            <p className="text-xs uppercase tracking-wide text-slate-500 mb-2">Destination</p>
             <p className="font-semibold text-orange-200">
               {delivery.deliveryAddress || "Destination address unavailable"}
             </p>
           </div>
 
-          <div className="rounded-xl bg-slate-800/70 p-4 border border-slate-700 text-sm text-slate-200 space-y-2">
-            <div className="rounded-lg border border-cyan-400/30 bg-cyan-500/10 px-3 py-2 text-cyan-100 text-xs font-semibold">
+          <div className="rounded-xl bg-slate-50 p-4 border border-slate-200 text-sm text-slate-700 space-y-2">
+            <div className="rounded-lg border border-cyan-300 bg-cyan-50 px-3 py-2 text-cyan-800 text-xs font-semibold">
               Main route (BLUE): Pickup (P) → Destination (D)
             </div>
             <div className="flex items-center gap-3">
@@ -413,7 +424,7 @@ export default function CarrierLiveTrack() {
           </div>
         </aside>
 
-        <section className="rounded-2xl border border-slate-800 bg-slate-900 overflow-hidden min-h-[70vh]">
+        <section className="rounded-2xl border border-slate-200 bg-white overflow-hidden min-h-[70vh] shadow-sm">
           <GoogleMap
             center={mapCenter}
             zoom={13}
