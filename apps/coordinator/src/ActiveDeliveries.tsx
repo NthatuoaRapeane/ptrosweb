@@ -8,13 +8,19 @@ import {
   onSnapshot,
   updateDoc,
   doc,
-  where,
-  getDocs,
 } from "firebase/firestore";
 import { toast, Toaster } from "react-hot-toast";
 import { Link, useSearchParams } from "react-router-dom";
 import { format } from "date-fns";
 import { writeTimestamp, getTimeServiceStatus } from "./services/timeService";
+import { assignDeliveryIntelligently } from "./services/routeIntelligenceService";
+import {
+  FaBox,
+  FaChartLine,
+  FaMagnifyingGlass,
+  FaTriangleExclamation,
+  FaChartColumn,
+} from "react-icons/fa6";
 
 interface Delivery {
   id: string;
@@ -27,9 +33,13 @@ interface Delivery {
   carrierName?: string;
   priority: string;
   paymentAmount: number;
+  packageWeight?: number;
+  packageValue?: number;
   createdAt: Date;
   pickupDateTime?: Date;
   deliveryDate?: Date;
+  pickupLocation?: { lat: number; lng: number };
+  deliveryLocation?: { lat: number; lng: number };
 }
 
 export default function ActiveDeliveries() {
@@ -44,6 +54,7 @@ export default function ActiveDeliveries() {
     assigned: 0,
     inTransit: 0,
     delivered: 0,
+    cancelled: 0,
     revenue: 0,
   });
 
@@ -61,6 +72,7 @@ export default function ActiveDeliveries() {
           assigned: 0,
           inTransit: 0,
           delivered: 0,
+          cancelled: 0,
           revenue: 0,
         };
 
@@ -77,9 +89,13 @@ export default function ActiveDeliveries() {
             carrierName: data.carrierName,
             priority: data.priority || "standard",
             paymentAmount: data.paymentAmount || 0,
+            packageWeight: data.packageWeight || 0,
+            packageValue: data.packageValue || 0,
             createdAt: data.createdAt?.toDate() || new Date(),
             pickupDateTime: data.pickupDateTime?.toDate(),
             deliveryDate: data.deliveryDate?.toDate(),
+            pickupLocation: data.pickupLocation,
+            deliveryLocation: data.deliveryLocation,
           };
           deliveryList.push(delivery);
 
@@ -87,12 +103,14 @@ export default function ActiveDeliveries() {
           statsTemp.total++;
           if (delivery.status === "pending" || delivery.status === "created")
             statsTemp.pending++;
-          if (delivery.status === "assigned") statsTemp.assigned++;
+          if (delivery.status === "assigned" || delivery.status === "accepted")
+            statsTemp.assigned++;
           if (delivery.status === "in_transit") statsTemp.inTransit++;
           if (delivery.status === "delivered") {
             statsTemp.delivered++;
             statsTemp.revenue += delivery.paymentAmount;
           }
+          if (delivery.status === "cancelled") statsTemp.cancelled++;
         });
 
         setDeliveries(deliveryList);
@@ -120,7 +138,15 @@ export default function ActiveDeliveries() {
   // Filter deliveries
   const filteredDeliveries = deliveries.filter((delivery) => {
     // Status filter
-    if (filter !== "all" && delivery.status !== filter) return false;
+    if (filter !== "all") {
+      if (filter === "assigned") {
+        if (!["assigned", "accepted"].includes(delivery.status)) {
+          return false;
+        }
+      } else if (delivery.status !== filter) {
+        return false;
+      }
+    }
 
     // Search filter
     if (searchTerm) {
@@ -164,40 +190,13 @@ export default function ActiveDeliveries() {
 
   // Assign carrier to delivery
   const assignCarrier = async (deliveryId: string) => {
-    // In real app, you would show a modal to select carrier
-    // For now, we'll assign to first available carrier
     try {
-      const carriersQuery = query(
-        collection(db, "users"),
-        where("role", "==", "carrier"),
-        where("isApproved", "==", true),
-        where("status", "==", "active"),
+      const result = await assignDeliveryIntelligently(deliveryId);
+      const recommendation = result.selected;
+      toast.success(
+        `Smart assigned to ${recommendation.fullName} • ${recommendation.remainingCapacityKg.toFixed(0)}kg left • ${recommendation.distanceToPickupKm.toFixed(1)}km away`,
+        { duration: 4500 },
       );
-      const carriersSnapshot = await getDocs(carriersQuery);
-
-      if (carriersSnapshot.empty) {
-        toast.error("No available carriers");
-        return;
-      }
-
-      const firstCarrier = carriersSnapshot.docs[0];
-
-      // Get server timestamp (from Realtime DB with Firestore fallback)
-      const timestamp = await writeTimestamp(
-        `deliveries/${deliveryId}/assigned`,
-      );
-      const timeServiceStatus = getTimeServiceStatus();
-
-      await updateDoc(doc(db, "deliveries", deliveryId), {
-        status: "assigned",
-        carrierId: firstCarrier.id,
-        carrierName: firstCarrier.data().fullName,
-        assignedAt: timestamp,
-        updatedAt: timestamp,
-        timeSource: timeServiceStatus.primarySource,
-      });
-
-      toast.success(`Assigned to ${firstCarrier.data().fullName}`);
     } catch (error) {
       console.error("Error assigning carrier:", error);
       toast.error("Failed to assign carrier");
@@ -211,6 +210,7 @@ export default function ActiveDeliveries() {
       case "created":
         return "bg-yellow-100 text-yellow-800";
       case "assigned":
+      case "accepted":
         return "bg-blue-100 text-blue-800";
       case "picked_up":
         return "bg-purple-100 text-purple-800";
@@ -251,6 +251,16 @@ export default function ActiveDeliveries() {
     }
   };
 
+  const canLiveTrack = (status: string) =>
+    [
+      "assigned",
+      "accepted",
+      "picked_up",
+      "in_transit",
+      "out_for_delivery",
+      "delivered",
+    ].includes(status);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -258,6 +268,20 @@ export default function ActiveDeliveries() {
       </div>
     );
   }
+
+  const successRate =
+    stats.delivered + stats.cancelled > 0
+      ? Math.round(
+          (stats.delivered / (stats.delivered + stats.cancelled)) * 100,
+        )
+      : 0;
+  const avgDeliveredAmount =
+    stats.delivered > 0 ? stats.revenue / stats.delivered : 0;
+
+  const getStatCardClass = (active: boolean) =>
+    `bg-white p-4 rounded-xl shadow border transition-all text-left ${
+      active ? "ring-2 ring-blue-500 border-blue-200" : "border-transparent"
+    } hover:shadow-md hover:-translate-y-0.5`;
 
   return (
     <div>
@@ -284,40 +308,64 @@ export default function ActiveDeliveries() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
-          <div className="bg-white p-4 rounded-xl shadow">
+          <button
+            type="button"
+            onClick={() => setFilter("all")}
+            className={getStatCardClass(filter === "all")}
+          >
             <div className="text-sm text-gray-500">Total</div>
             <div className="text-2xl font-bold">{stats.total}</div>
-          </div>
-          <div className="bg-white p-4 rounded-xl shadow">
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilter("pending")}
+            className={getStatCardClass(filter === "pending")}
+          >
             <div className="text-sm text-gray-500">Pending</div>
             <div className="text-2xl font-bold text-yellow-600">
               {stats.pending}
             </div>
-          </div>
-          <div className="bg-white p-4 rounded-xl shadow">
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilter("assigned")}
+            className={getStatCardClass(filter === "assigned")}
+          >
             <div className="text-sm text-gray-500">Assigned</div>
             <div className="text-2xl font-bold text-blue-600">
               {stats.assigned}
             </div>
-          </div>
-          <div className="bg-white p-4 rounded-xl shadow">
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilter("in_transit")}
+            className={getStatCardClass(filter === "in_transit")}
+          >
             <div className="text-sm text-gray-500">In Transit</div>
             <div className="text-2xl font-bold text-indigo-600">
               {stats.inTransit}
             </div>
-          </div>
-          <div className="bg-white p-4 rounded-xl shadow">
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilter("delivered")}
+            className={getStatCardClass(filter === "delivered")}
+          >
             <div className="text-sm text-gray-500">Delivered</div>
             <div className="text-2xl font-bold text-green-600">
               {stats.delivered}
             </div>
-          </div>
-          <div className="bg-white p-4 rounded-xl shadow">
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilter("delivered")}
+            className={getStatCardClass(filter === "delivered")}
+          >
             <div className="text-sm text-gray-500">Revenue</div>
             <div className="text-2xl font-bold text-purple-600">
               M{stats.revenue.toFixed(2)}
             </div>
-          </div>
+          </button>
         </div>
 
         {/* Filters */}
@@ -386,7 +434,7 @@ export default function ActiveDeliveries() {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 pr-4 py-2 border rounded-lg w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
+              <FaMagnifyingGlass className="absolute left-3 top-2.5 text-gray-400" />
             </div>
           </div>
         </div>
@@ -395,7 +443,7 @@ export default function ActiveDeliveries() {
       {/* Deliveries Table */}
       {filteredDeliveries.length === 0 ? (
         <div className="bg-white rounded-xl shadow p-8 text-center">
-          <div className="text-6xl mb-4">📦</div>
+          <FaBox className="text-6xl mb-4 mx-auto text-gray-400" />
           <h3 className="text-xl font-semibold text-gray-700 mb-2">
             No deliveries found
           </h3>
@@ -443,7 +491,7 @@ export default function ActiveDeliveries() {
                     <td className="px-6 py-4">
                       <div>
                         <div className="flex items-center">
-                          <span className="text-lg mr-2">📦</span>
+                          <FaBox className="text-lg mr-2" />
                           <div>
                             <div className="font-medium text-gray-900">
                               {delivery.trackingCode}
@@ -506,65 +554,65 @@ export default function ActiveDeliveries() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col space-y-2">
-                        <div className="flex space-x-2">
-                          <Link
-                            to={`/deliveries/${delivery.id}`}
-                            className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200"
-                          >
-                            View
-                          </Link>
+                        <Link
+                          to={`/deliveries/${delivery.id}`}
+                          className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200 text-center"
+                        >
+                          View
+                        </Link>
+
+                        {canLiveTrack(delivery.status) && (
                           <Link
                             to={`/deliveries/${delivery.id}/track`}
-                            className="px-3 py-1 bg-cyan-100 text-cyan-700 rounded text-sm hover:bg-cyan-200"
+                            className="px-3 py-1 bg-cyan-100 text-cyan-700 rounded text-sm hover:bg-cyan-200 text-center"
                           >
                             Live Track
                           </Link>
+                        )}
 
-                          {delivery.status === "pending" && (
-                            <button
-                              onClick={() => assignCarrier(delivery.id)}
-                              className="px-3 py-1 bg-green-100 text-green-700 rounded text-sm hover:bg-green-200"
-                            >
-                              Assign
-                            </button>
-                          )}
+                        {(delivery.status === "pending" ||
+                          delivery.status === "created") && (
+                          <button
+                            onClick={() => assignCarrier(delivery.id)}
+                            className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs hover:bg-green-200 text-center"
+                          >
+                            Smart Assign
+                          </button>
+                        )}
 
-                          {delivery.status === "assigned" && (
-                            <button
-                              onClick={() =>
-                                updateStatus(delivery.id, "picked_up")
-                              }
-                              className="px-3 py-1 bg-purple-100 text-purple-700 rounded text-sm hover:bg-purple-200"
-                            >
-                              Mark Picked
-                            </button>
-                          )}
-                        </div>
+                        {(delivery.status === "assigned" ||
+                          delivery.status === "accepted") && (
+                          <button
+                            onClick={() =>
+                              updateStatus(delivery.id, "picked_up")
+                            }
+                            className="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs hover:bg-purple-200 text-center"
+                          >
+                            Mark Picked
+                          </button>
+                        )}
 
-                        {/* Status quick actions */}
-                        <div className="flex space-x-1">
-                          {delivery.status === "picked_up" && (
-                            <button
-                              onClick={() =>
-                                updateStatus(delivery.id, "in_transit")
-                              }
-                              className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded text-xs hover:bg-indigo-200"
-                            >
-                              Start Transit
-                            </button>
-                          )}
+                        {delivery.status === "picked_up" && (
+                          <button
+                            onClick={() =>
+                              updateStatus(delivery.id, "in_transit")
+                            }
+                            className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded text-xs hover:bg-indigo-200 text-center"
+                          >
+                            Start Transit
+                          </button>
+                        )}
 
-                          {delivery.status === "in_transit" && (
-                            <button
-                              onClick={() =>
-                                updateStatus(delivery.id, "delivered")
-                              }
-                              className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs hover:bg-green-200"
-                            >
-                              Mark Delivered
-                            </button>
-                          )}
-                        </div>
+                        {delivery.status === "in_transit" && (
+                          <button
+                            onClick={() =>
+                              updateStatus(delivery.id, "delivered")
+                            }
+                            className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs hover:bg-green-200 text-center"
+                          >
+                            Mark Delivered
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -593,15 +641,19 @@ export default function ActiveDeliveries() {
       {/* Quick Actions Panel */}
       <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-xl shadow p-6">
-          <h3 className="font-semibold text-lg mb-4">📊 Delivery Insights</h3>
+          <h3 className="font-semibold text-lg mb-4 inline-flex items-center gap-2">
+            <FaChartColumn /> Delivery Insights
+          </h3>
           <ul className="space-y-3 text-sm">
             <li className="flex justify-between">
-              <span className="text-gray-600">Avg delivery time:</span>
-              <span className="font-medium">2.5 hours</span>
+              <span className="text-gray-600">Avg delivered amount:</span>
+              <span className="font-medium">
+                M{avgDeliveredAmount.toFixed(2)}
+              </span>
             </li>
             <li className="flex justify-between">
               <span className="text-gray-600">Success rate:</span>
-              <span className="font-medium text-green-600">98.2%</span>
+              <span className="font-medium text-green-600">{successRate}%</span>
             </li>
             <li className="flex justify-between">
               <span className="text-gray-600">Today's deliveries:</span>
@@ -611,7 +663,9 @@ export default function ActiveDeliveries() {
         </div>
 
         <div className="bg-white rounded-xl shadow p-6">
-          <h3 className="font-semibold text-lg mb-4">🚨 Urgent Actions</h3>
+          <h3 className="font-semibold text-lg mb-4 inline-flex items-center gap-2">
+            <FaTriangleExclamation /> Urgent Actions
+          </h3>
           <div className="space-y-3">
             {deliveries
               .filter((d) => d.status === "pending")
@@ -631,7 +685,7 @@ export default function ActiveDeliveries() {
                     onClick={() => assignCarrier(delivery.id)}
                     className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded text-sm hover:bg-yellow-200"
                   >
-                    Assign
+                    Smart Assign
                   </button>
                 </div>
               ))}
@@ -639,7 +693,9 @@ export default function ActiveDeliveries() {
         </div>
 
         <div className="bg-white rounded-xl shadow p-6">
-          <h3 className="font-semibold text-lg mb-4">📈 Performance</h3>
+          <h3 className="font-semibold text-lg mb-4 inline-flex items-center gap-2">
+            <FaChartLine /> Performance
+          </h3>
           <div className="text-center">
             <div className="text-3xl font-bold text-blue-600 mb-2">
               {deliveries.length > 0

@@ -1,6 +1,14 @@
 // apps/coordinator/src/LiveMap.tsx
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { db, realtimeDb } from "@config";
+import {
+  db,
+  realtimeDb,
+  formatRouteNetworkSegmentType,
+  getDisplayRouteNetworkSegments,
+  getRouteNetworkSegmentStyle,
+  subscribeRouteNetworkSegments,
+  type RouteNetworkSegment,
+} from "@config";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import {
   ref as rtdbRef,
@@ -9,6 +17,16 @@ import {
   onChildRemoved,
 } from "firebase/database";
 import { Toaster } from "react-hot-toast";
+import {
+  FaMap,
+  FaMountain,
+  FaMotorcycle,
+  FaPhone,
+  FaSatellite,
+  FaGlobe,
+} from "react-icons/fa6";
+import { IconType } from "react-icons";
+import { decodePolyline } from "./routeHistory";
 
 declare global {
   interface Window {
@@ -111,12 +129,15 @@ interface MarkerData {
 interface MapStyle {
   name: string;
   id: string;
-  icon: string;
+  icon: IconType;
 }
 
 export default function LiveMap() {
   const [carrierProfiles, setCarrierProfiles] = useState<CarrierProfile[]>([]);
   const [activeDeliveries, setActiveDeliveries] = useState<ActiveDelivery[]>(
+    [],
+  );
+  const [managedSegments, setManagedSegments] = useState<RouteNetworkSegment[]>(
     [],
   );
   const [tracksMap, setTracksMap] = useState<Record<string, any>>({});
@@ -143,6 +164,8 @@ export default function LiveMap() {
   const trafficLayerRef = useRef<any>(null);
   const transitLayerRef = useRef<any>(null);
   const hasAutoFittedRef = useRef(false);
+  const routePolylinesRef = useRef<any[]>([]);
+  const routeMarkersRef = useRef<any[]>([]);
 
   const getTrackEpochMs = (track: any): number => {
     const raw = track?.timestampMs ?? track?.timestamp;
@@ -206,10 +229,10 @@ export default function LiveMap() {
 
   // Map styles configuration
   const mapStyles: MapStyle[] = [
-    { name: "Roadmap", id: "roadmap", icon: "🗺️" },
-    { name: "Satellite", id: "satellite", icon: "🛰️" },
-    { name: "Hybrid", id: "hybrid", icon: "🌍" },
-    { name: "Terrain", id: "terrain", icon: "⛰️" },
+    { name: "Roadmap", id: "roadmap", icon: FaMap },
+    { name: "Satellite", id: "satellite", icon: FaSatellite },
+    { name: "Hybrid", id: "hybrid", icon: FaGlobe },
+    { name: "Terrain", id: "terrain", icon: FaMountain },
   ];
 
   // Listen for Google Maps ready signal
@@ -249,6 +272,10 @@ export default function LiveMap() {
       window.removeEventListener("mapsReady", handleMapsReady);
       clearTimeout(timeout);
     };
+  }, []);
+
+  useEffect(() => {
+    return subscribeRouteNetworkSegments(setManagedSegments);
   }, []);
 
   // Load carrier metadata and active deliveries from Firestore
@@ -644,7 +671,7 @@ export default function LiveMap() {
             <div style="padding: 10px; min-width: 200px; font-family: system-ui;">
               <h3 style="margin: 0 0 5px 0; color: #1E40AF; font-size: 14px; font-weight: 600;">${carrier.name}</h3>
               <p style="margin: 0 0 5px 0; color: #4B5563; font-size: 12px;">${carrier.vehicleType}</p>
-              <p style="margin: 0 0 5px 0; font-size: 12px;">📱 ${carrier.phone}</p>
+              <p style="margin: 0 0 5px 0; font-size: 12px;">Phone: ${carrier.phone}</p>
               <p style="margin: 0 0 5px 0; font-size: 11px; color: #6B7280;">
                 Status: <strong>${carrier.status}</strong>
               </p>
@@ -785,6 +812,151 @@ export default function LiveMap() {
       }
     }
   }, [carriers, deliveries, selectedType, googleMapsLoaded]);
+
+  useEffect(() => {
+    if (!mapInstance.current || !window.google || !googleMapsLoaded) return;
+
+    routePolylinesRef.current.forEach((polyline) => polyline.setMap(null));
+    routeMarkersRef.current.forEach((marker) => marker.setMap(null));
+    routePolylinesRef.current = [];
+    routeMarkersRef.current = [];
+
+    const visibleDeliveries = selectedType === "carriers" ? [] : deliveries;
+
+    visibleDeliveries.forEach((delivery) => {
+      const pickupPoint = delivery.pickupLocation;
+      const deliveryPoint = delivery.deliveryLocation;
+      const currentPoint = delivery.currentLocation;
+      const plannedPath = decodePolyline(delivery.route?.polyline || "");
+      const activePath = decodePolyline(
+        delivery.routeHistory?.activePolyline || "",
+      );
+
+      const fallbackPath =
+        pickupPoint && deliveryPoint ? [pickupPoint, deliveryPoint] : [];
+      const routeColor =
+        delivery.status === "out_for_delivery"
+          ? "#0ea5e9"
+          : delivery.status === "in_transit"
+            ? "#f59e0b"
+            : "#8b5cf6";
+
+      const baselinePath = plannedPath.length > 1 ? plannedPath : fallbackPath;
+      if (baselinePath.length > 1) {
+        routePolylinesRef.current.push(
+          new window.google.maps.Polyline({
+            path: baselinePath,
+            geodesic: true,
+            strokeColor: "#94a3b8",
+            strokeOpacity: 0.45,
+            strokeWeight: 4,
+            map: mapInstance.current,
+          }),
+        );
+      }
+
+      const liveRoutePath =
+        activePath.length > 1
+          ? activePath
+          : currentPoint && pickupPoint
+            ? [pickupPoint, currentPoint]
+            : [];
+
+      if (liveRoutePath.length > 1) {
+        routePolylinesRef.current.push(
+          new window.google.maps.Polyline({
+            path: liveRoutePath,
+            geodesic: true,
+            strokeColor: routeColor,
+            strokeOpacity: 0.95,
+            strokeWeight: 5,
+            map: mapInstance.current,
+          }),
+        );
+      }
+
+      [
+        pickupPoint && { point: pickupPoint, label: "P", color: "#fbbf24" },
+        deliveryPoint && {
+          point: deliveryPoint,
+          label: "D",
+          color: "#fb923c",
+        },
+      ]
+        .filter(Boolean)
+        .forEach((entry: any) => {
+          const marker = new window.google.maps.Marker({
+            position: entry.point,
+            map: mapInstance.current,
+            label: {
+              text: entry.label,
+              color: "#0f172a",
+              fontWeight: "700",
+            },
+            icon: {
+              path: window.google.maps.SymbolPath.CIRCLE,
+              fillColor: entry.color,
+              fillOpacity: 1,
+              strokeColor: "#ffffff",
+              strokeWeight: 2,
+              scale: 7,
+            },
+            title: `${delivery.trackingCode} ${entry.label === "P" ? "pickup" : "delivery"}`,
+          });
+
+          marker.addListener("click", () => {
+            if (!sharedInfoWindowRef.current || !mapInstance.current) {
+              return;
+            }
+
+            const locationLabel = entry.label === "P" ? "Pickup" : "Dropoff";
+            const address =
+              entry.label === "P"
+                ? delivery.pickupAddress
+                : delivery.deliveryAddress;
+
+            sharedInfoWindowRef.current.setContent(`
+              <div style="font-family:Arial,sans-serif;min-width:200px;max-width:260px;padding:4px;">
+                <h4 style="margin:0 0 6px;font-size:14px;color:#1e293b;">${locationLabel} • ${delivery.trackingCode}</h4>
+                <p style="margin:0 0 4px;font-size:12px;color:#475569;">${address || "Address unavailable"}</p>
+                <p style="margin:0;font-size:12px;color:#64748b;">Status: ${(delivery.status || "unknown").replace(/_/g, " ")}</p>
+              </div>
+            `);
+            sharedInfoWindowRef.current.open(mapInstance.current, marker);
+          });
+
+          routeMarkersRef.current.push(marker);
+        });
+    });
+
+    const contextPoints = visibleDeliveries.flatMap((delivery) => [
+      delivery.pickupLocation,
+      delivery.deliveryLocation,
+      delivery.currentLocation,
+    ]);
+
+    getDisplayRouteNetworkSegments(managedSegments, contextPoints, {
+      thresholdKm: 12,
+      fallbackLimit: 150,
+    }).forEach((segment) => {
+      const style = getRouteNetworkSegmentStyle(segment);
+      routePolylinesRef.current.push(
+        new window.google.maps.Polyline({
+          path: [segment.start, segment.end],
+          geodesic: true,
+          strokeColor: style.strokeColor,
+          strokeOpacity: style.strokeOpacity,
+          strokeWeight: style.strokeWeight,
+          map: mapInstance.current,
+        }),
+      );
+    });
+
+    return () => {
+      routePolylinesRef.current.forEach((polyline) => polyline.setMap(null));
+      routeMarkersRef.current.forEach((marker) => marker.setMap(null));
+    };
+  }, [deliveries, googleMapsLoaded, managedSegments, selectedType]);
 
   // Keep auto-fit behavior only for initial load and marker-type filter changes.
   useEffect(() => {
@@ -935,7 +1107,7 @@ Current Status: ${satelliteLoaded ? "Satellite tiles loaded" : "Waiting for sate
   if (mapError) {
     return (
       <div className="bg-white rounded-xl shadow p-8 text-center">
-        <div className="text-6xl mb-4">🗺️</div>
+        <FaMap className="text-6xl mb-4 mx-auto text-gray-400" />
         <h3 className="text-xl font-semibold text-gray-700 mb-2">Map Error</h3>
         <p className="text-red-600 mb-4">{mapError}</p>
         <div className="space-x-4">
@@ -992,8 +1164,8 @@ Current Status: ${satelliteLoaded ? "Satellite tiles loaded" : "Waiting for sate
           <div className="text-sm text-gray-500">Map Status</div>
           <div className="text-2xl font-bold text-green-600">
             {satelliteLoaded || mapStyle !== "satellite"
-              ? "✅ Live"
-              : "🔄 Loading..."}
+              ? "Live"
+              : "Loading..."}
           </div>
         </div>
       </div>
@@ -1131,13 +1303,13 @@ Current Status: ${satelliteLoaded ? "Satellite tiles loaded" : "Waiting for sate
 
       {/* Map Container */}
       <div className="bg-white rounded-xl shadow overflow-hidden mb-6">
-        <div className="border-b px-6 py-4 bg-gray-50">
-          <div className="flex items-center justify-between">
+        <div className="border-b px-4 md:px-6 py-4 bg-gray-50">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <h3 className="font-medium text-gray-700">
               Real-time Tracking View •{" "}
               {mapStyles.find((s) => s.id === mapStyle)?.name}
             </h3>
-            <div className="flex items-center space-x-4">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
               <div className="flex items-center">
                 <div className="w-3 h-3 rounded-full bg-blue-600 mr-2"></div>
                 <span className="text-sm">Carriers ({carriers.length})</span>
@@ -1147,6 +1319,14 @@ Current Status: ${satelliteLoaded ? "Satellite tiles loaded" : "Waiting for sate
                 <span className="text-sm">
                   Deliveries ({deliveries.length})
                 </span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-3 h-3 rounded-full bg-slate-400 mr-2"></div>
+                <span className="text-sm">Planned / live routes</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-3 h-3 rounded-full bg-green-600 mr-2"></div>
+                <span className="text-sm">Managed route rules</span>
               </div>
               {showTraffic && (
                 <div className="flex items-center">
@@ -1158,7 +1338,7 @@ Current Status: ${satelliteLoaded ? "Satellite tiles loaded" : "Waiting for sate
           </div>
         </div>
 
-        <div className="border-b px-6 py-3 bg-gray-50">
+        <div className="border-b px-4 md:px-6 py-3 bg-gray-50">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-sm font-medium text-gray-700">
@@ -1178,7 +1358,7 @@ Current Status: ${satelliteLoaded ? "Satellite tiles loaded" : "Waiting for sate
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
-                  <span>{style.icon}</span>
+                  <style.icon />
                   <span>{style.name}</span>
                 </button>
               ))}
@@ -1190,7 +1370,9 @@ Current Status: ${satelliteLoaded ? "Satellite tiles loaded" : "Waiting for sate
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-yellow-700">
-                    🛰️ Satellite View Active
+                    <span className="inline-flex items-center gap-2">
+                      <FaSatellite /> Satellite View Active
+                    </span>
                   </span>
                   {!satelliteLoaded && (
                     <span className="text-sm text-yellow-600">
@@ -1230,12 +1412,12 @@ Current Status: ${satelliteLoaded ? "Satellite tiles loaded" : "Waiting for sate
         <div className="relative">
           <div
             ref={mapRef}
-            className="w-full h-[600px] bg-gray-100"
-            style={{ minHeight: "600px" }}
+            className="w-full h-[420px] md:h-[520px] lg:h-[620px] bg-gray-100"
+            style={{ minHeight: "420px" }}
           />
         </div>
 
-        <div className="border-t px-6 py-4 bg-gray-50">
+        <div className="border-t px-4 md:px-6 py-4 bg-gray-50">
           <div className="text-sm text-gray-500">
             Current map:{" "}
             <strong>{mapStyles.find((s) => s.id === mapStyle)?.name}</strong>
@@ -1282,7 +1464,7 @@ Current Status: ${satelliteLoaded ? "Satellite tiles loaded" : "Waiting for sate
         <h3 className="text-xl font-bold mb-4">Active Carriers</h3>
         {carriers.length === 0 ? (
           <div className="bg-white rounded-xl shadow p-8 text-center">
-            <div className="text-6xl mb-4">🏍️</div>
+            <FaMotorcycle className="text-6xl mb-4 mx-auto text-gray-400" />
             <h4 className="text-lg font-semibold text-gray-700 mb-2">
               No active carriers with location data
             </h4>
@@ -1306,7 +1488,9 @@ Current Status: ${satelliteLoaded ? "Satellite tiles loaded" : "Waiting for sate
                       {carrier.vehicleType}
                     </div>
                     <div className="text-sm text-gray-500 mt-1">
-                      📱 {carrier.phone}
+                      <span className="inline-flex items-center gap-2">
+                        <FaPhone /> {carrier.phone}
+                      </span>
                     </div>
                   </div>
                   <button
@@ -1338,6 +1522,126 @@ Current Status: ${satelliteLoaded ? "Satellite tiles loaded" : "Waiting for sate
                 </div>
               </div>
             ))}
+          </div>
+        )}
+      </div>
+
+      <div className="mt-8">
+        <h3 className="text-xl font-bold mb-4">Active Deliveries</h3>
+        {deliveries.length === 0 ? (
+          <div className="bg-white rounded-xl shadow p-8 text-center text-gray-500">
+            No active deliveries to visualize right now.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {deliveries.map((delivery) => {
+              const relevantSegments = getDisplayRouteNetworkSegments(
+                managedSegments,
+                [
+                  delivery.pickupLocation,
+                  delivery.deliveryLocation,
+                  delivery.currentLocation,
+                ],
+                { thresholdKm: 12, fallbackLimit: 20 },
+              );
+
+              return (
+                <div
+                  key={delivery.id}
+                  className="bg-white rounded-xl shadow p-4 border border-gray-100"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="font-bold text-gray-800">
+                        {delivery.trackingCode}
+                      </div>
+                      <div className="text-sm text-gray-600 capitalize">
+                        {delivery.status.replace(/_/g, " ")}
+                      </div>
+                    </div>
+                    <div className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+                      {relevantSegments.length} route rule(s)
+                    </div>
+                  </div>
+
+                  <div className="mt-3 space-y-1 text-sm text-gray-600">
+                    <p>
+                      <strong>Pickup:</strong> {delivery.pickupAddress}
+                    </p>
+                    <p>
+                      <strong>Dropoff:</strong> {delivery.deliveryAddress}
+                    </p>
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {delivery.pickupLocation && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          centerOnLocation(
+                            delivery.pickupLocation!.lat,
+                            delivery.pickupLocation!.lng,
+                          )
+                        }
+                        className="rounded-full bg-amber-100 px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-200"
+                      >
+                        Pickup
+                      </button>
+                    )}
+                    {delivery.currentLocation && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          centerOnLocation(
+                            delivery.currentLocation!.lat,
+                            delivery.currentLocation!.lng,
+                          )
+                        }
+                        className="rounded-full bg-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-800 hover:bg-blue-200"
+                      >
+                        Current
+                      </button>
+                    )}
+                    {delivery.deliveryLocation && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          centerOnLocation(
+                            delivery.deliveryLocation!.lat,
+                            delivery.deliveryLocation!.lng,
+                          )
+                        }
+                        className="rounded-full bg-orange-100 px-3 py-1.5 text-xs font-semibold text-orange-800 hover:bg-orange-200"
+                      >
+                        Dropoff
+                      </button>
+                    )}
+                  </div>
+
+                  {relevantSegments.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {relevantSegments.slice(0, 3).map((segment) => {
+                        const style = getRouteNetworkSegmentStyle(segment);
+                        return (
+                          <span
+                            key={segment.id}
+                            className="rounded-full border px-2.5 py-1 text-[11px] font-semibold"
+                            style={{
+                              borderColor: style.strokeColor,
+                              color: style.strokeColor,
+                              backgroundColor: `${style.strokeColor}12`,
+                            }}
+                          >
+                            {segment.name} •{" "}
+                            {formatRouteNetworkSegmentType(segment.type)}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

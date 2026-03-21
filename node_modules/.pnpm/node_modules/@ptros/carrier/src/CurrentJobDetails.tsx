@@ -1,5 +1,17 @@
-import { useState } from "react";
-import { GoogleMap, Marker, Polyline } from "@react-google-maps/api";
+import { useEffect, useMemo, useState } from "react";
+import {
+  formatRouteNetworkSegmentType,
+  getDisplayRouteNetworkSegments,
+  getRouteNetworkSegmentStyle,
+  subscribeRouteNetworkSegments,
+  type RouteNetworkSegment,
+} from "@config";
+import {
+  GoogleMap,
+  InfoWindow,
+  Marker,
+  Polyline,
+} from "@react-google-maps/api";
 import { Delivery } from "./types";
 import { formatCurrency, formatDate } from "./utils";
 import { useDeliveryStatus } from "./hooks/useDeliveryStatus";
@@ -29,6 +41,20 @@ export default function CurrentJobDetails({
     Array<{ lat: number; lng: number }>
   >([]);
   const [vehicleSpecificShortcut, setVehicleSpecificShortcut] = useState(false);
+  const [managedSegments, setManagedSegments] = useState<RouteNetworkSegment[]>(
+    [],
+  );
+  const [modalMapInstance, setModalMapInstance] =
+    useState<google.maps.Map | null>(null);
+  const [selectedMapInfo, setSelectedMapInfo] = useState<{
+    position: { lat: number; lng: number };
+    title: string;
+    details: string[];
+  } | null>(null);
+
+  useEffect(() => {
+    return subscribeRouteNetworkSegments(setManagedSegments);
+  }, []);
 
   if (!delivery) {
     return (
@@ -163,6 +189,22 @@ export default function CurrentJobDetails({
           lng: delivery.currentLocation.lng,
         }
       : { lat: -29.31, lng: 27.48 });
+
+  const visibleManagedSegments = useMemo(
+    () =>
+      getDisplayRouteNetworkSegments(
+        managedSegments,
+        [pickupPoint, deliveryPoint, currentPoint],
+        { thresholdKm: 12, fallbackLimit: 100 },
+      ),
+    [currentPoint, deliveryPoint, managedSegments, pickupPoint],
+  );
+
+  const focusPointOnModalMap = (point?: { lat: number; lng: number }) => {
+    if (!modalMapInstance || !point) return;
+    modalMapInstance.panTo(point);
+    modalMapInstance.setZoom(16);
+  };
 
   const onShortcutMapClick = (event: google.maps.MapMouseEvent) => {
     if (!event.latLng) return;
@@ -638,10 +680,27 @@ export default function CurrentJobDetails({
                     <GoogleMap
                       zoom={14}
                       center={mapCenter}
+                      onLoad={(map) => setModalMapInstance(map)}
                       onClick={onShortcutMapClick}
                       mapContainerStyle={{ width: "100%", height: "100%" }}
                       options={{ disableDefaultUI: false }}
                     >
+                      {visibleManagedSegments.map((segment) => {
+                        const style = getRouteNetworkSegmentStyle(segment);
+                        return (
+                          <Polyline
+                            key={`managed-${segment.id}`}
+                            path={[segment.start, segment.end]}
+                            options={{
+                              strokeColor: style.strokeColor,
+                              strokeOpacity: style.strokeOpacity,
+                              strokeWeight: style.strokeWeight,
+                              zIndex: 12,
+                            }}
+                          />
+                        );
+                      })}
+
                       {carrierToPickupPath.length > 1 && (
                         <Polyline
                           path={carrierToPickupPath}
@@ -713,6 +772,13 @@ export default function CurrentJobDetails({
                         <Marker
                           position={pickupPoint}
                           title="Pickup"
+                          onClick={() =>
+                            setSelectedMapInfo({
+                              position: pickupPoint,
+                              title: "Pickup location",
+                              details: [delivery.pickupAddress],
+                            })
+                          }
                           icon={{
                             path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
                             scale: 5,
@@ -728,6 +794,13 @@ export default function CurrentJobDetails({
                         <Marker
                           position={deliveryPoint}
                           title="Dropoff"
+                          onClick={() =>
+                            setSelectedMapInfo({
+                              position: deliveryPoint,
+                              title: "Dropoff location",
+                              details: [delivery.deliveryAddress],
+                            })
+                          }
                           icon={{
                             path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
                             scale: 5,
@@ -743,6 +816,16 @@ export default function CurrentJobDetails({
                         <Marker
                           position={currentPoint}
                           title="Current position"
+                          onClick={() =>
+                            setSelectedMapInfo({
+                              position: currentPoint,
+                              title: "Package location",
+                              details: [
+                                `Tracking: ${delivery.trackingCode}`,
+                                `Status: ${delivery.status.replace("_", " ")}`,
+                              ],
+                            })
+                          }
                           icon={{
                             path: google.maps.SymbolPath.CIRCLE,
                             scale: 7,
@@ -763,6 +846,24 @@ export default function CurrentJobDetails({
                         />
                       ))}
 
+                      {selectedMapInfo && (
+                        <InfoWindow
+                          position={selectedMapInfo.position}
+                          onCloseClick={() => setSelectedMapInfo(null)}
+                        >
+                          <div className="min-w-[180px] text-xs text-slate-700">
+                            <p className="text-sm font-semibold text-slate-900">
+                              {selectedMapInfo.title}
+                            </p>
+                            <div className="mt-1 space-y-0.5">
+                              {selectedMapInfo.details.map((line, index) => (
+                                <p key={`${line}-${index}`}>{line}</p>
+                              ))}
+                            </div>
+                          </div>
+                        </InfoWindow>
+                      )}
+
                       {shortcutPoints.length === 2 && (
                         <Polyline
                           path={shortcutPoints}
@@ -779,6 +880,16 @@ export default function CurrentJobDetails({
                       title="Route key"
                       className="top-2 right-2 max-w-[220px]"
                       items={[
+                        {
+                          color: "#16a34a",
+                          opacity: 0.92,
+                          label: "Managed shortcut",
+                        },
+                        {
+                          color: "#dc2626",
+                          opacity: 0.95,
+                          label: "Blocked / restricted",
+                        },
                         {
                           color: "#fbbf24",
                           opacity: 0.4,
@@ -810,14 +921,61 @@ export default function CurrentJobDetails({
 
                   <div className="flex items-center justify-between text-xs text-gray-600">
                     <span>Selected points: {shortcutPoints.length}/2</span>
-                    <button
-                      type="button"
-                      onClick={() => setShortcutPoints([])}
-                      className="rounded border border-gray-300 px-2 py-1 hover:bg-gray-100"
-                    >
-                      Reset points
-                    </button>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => focusPointOnModalMap(pickupPoint)}
+                        className="rounded border border-amber-200 bg-amber-50 px-2 py-1 text-amber-800 hover:bg-amber-100"
+                      >
+                        Pickup
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => focusPointOnModalMap(currentPoint)}
+                        className="rounded border border-emerald-200 bg-emerald-50 px-2 py-1 text-emerald-800 hover:bg-emerald-100"
+                      >
+                        Current
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => focusPointOnModalMap(deliveryPoint)}
+                        className="rounded border border-orange-200 bg-orange-50 px-2 py-1 text-orange-800 hover:bg-orange-100"
+                      >
+                        Dropoff
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShortcutPoints([])}
+                        className="rounded border border-gray-300 px-2 py-1 hover:bg-gray-100"
+                      >
+                        Reset points
+                      </button>
+                    </div>
                   </div>
+
+                  {visibleManagedSegments.length > 0 && (
+                    <div className="flex flex-wrap gap-2 text-xs">
+                      {visibleManagedSegments.map((segment) => {
+                        const style = getRouteNetworkSegmentStyle(segment);
+                        return (
+                          <button
+                            key={segment.id}
+                            type="button"
+                            onClick={() => focusPointOnModalMap(segment.start)}
+                            className="rounded-full border px-3 py-1.5 font-semibold"
+                            style={{
+                              borderColor: style.strokeColor,
+                              color: style.strokeColor,
+                              backgroundColor: `${style.strokeColor}12`,
+                            }}
+                          >
+                            {segment.name} •{" "}
+                            {formatRouteNetworkSegmentType(segment.type)}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
 
                   <label className="inline-flex items-center gap-2 text-sm text-gray-700">
                     <input

@@ -2,6 +2,8 @@
 import { useEffect, useState } from "react";
 import { db } from "@config";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { FaUsers } from "react-icons/fa6";
+import { Link } from "react-router-dom";
 
 interface Customer {
   id: string;
@@ -42,7 +44,7 @@ export default function CustomerList() {
       (error) => {
         console.error("Error loading customers:", error);
         setLoading(false);
-      }
+      },
     );
 
     return () => unsubscribe();
@@ -65,7 +67,7 @@ export default function CustomerList() {
 
       {customers.length === 0 ? (
         <div className="bg-white rounded-xl shadow p-8 text-center">
-          <div className="text-6xl mb-4">👥</div>
+          <FaUsers className="text-6xl mb-4 mx-auto text-gray-400" />
           <h3 className="text-xl font-semibold text-gray-700 mb-2">
             No customers found
           </h3>
@@ -92,13 +94,21 @@ export default function CustomerList() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     City
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {customers.map((customer) => (
                   <tr key={customer.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                      {customer.fullName || "Unnamed Customer"}
+                      <Link
+                        to={`/customers/${customer.id}`}
+                        className="text-blue-700 hover:text-blue-900"
+                      >
+                        {customer.fullName || "Unnamed Customer"}
+                      </Link>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {customer.email || "-"}
@@ -111,6 +121,16 @@ export default function CustomerList() {
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {customer.city || "-"}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col space-y-2">
+                        <Link
+                          to={`/customers/${customer.id}`}
+                          className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200 text-center"
+                        >
+                          View
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))}

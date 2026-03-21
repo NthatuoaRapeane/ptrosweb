@@ -11,10 +11,18 @@ import {
 } from "firebase/firestore";
 import { toast, Toaster } from "react-hot-toast";
 import { Link } from "react-router-dom";
+import { writeTimestamp, getTimeServiceStatus } from "./services/timeService";
 import {
-  writeTimestamp,
-  getTimeServiceStatus,
-} from "./services/timeService";
+  FaCircleCheck,
+  FaCirclePause,
+  FaHourglassHalf,
+  FaLocationDot,
+  FaMobileScreen,
+  FaMotorcycle,
+  FaStar,
+  FaTriangleExclamation,
+  FaXmark,
+} from "react-icons/fa6";
 
 interface Carrier {
   id: string;
@@ -114,7 +122,7 @@ export default function ActiveCarriers() {
 
         // Sort locally by creation date (newest first)
         carrierList.sort(
-          (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+          (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
         );
 
         setCarriers(carrierList);
@@ -125,7 +133,7 @@ export default function ActiveCarriers() {
         console.error("Error loading carriers:", error);
         toast.error("Failed to load carriers");
         setLoading(false);
-      }
+      },
     );
 
     return () => unsubscribe();
@@ -144,9 +152,7 @@ export default function ActiveCarriers() {
   // Update carrier status
   const updateCarrierStatus = async (carrierId: string, newStatus: string) => {
     try {
-      const timestamp = await writeTimestamp(
-        `carriers/${carrierId}/status`
-      );
+      const timestamp = await writeTimestamp(`carriers/${carrierId}/status`);
       const timeServiceStatus = getTimeServiceStatus();
 
       await updateDoc(doc(db, "users", carrierId), {
@@ -173,7 +179,7 @@ export default function ActiveCarriers() {
               i < Math.floor(rating) ? "text-yellow-400" : "text-gray-300"
             }`}
           >
-            ★
+            <FaStar />
           </span>
         ))}
         <span className="ml-2 text-sm text-gray-600">{rating.toFixed(1)}</span>
@@ -195,7 +201,9 @@ export default function ActiveCarriers() {
     if (!isApproved) {
       return (
         <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
-          ⏳ Pending
+          <span className="inline-flex items-center gap-1">
+            <FaHourglassHalf /> Pending
+          </span>
         </span>
       );
     }
@@ -204,19 +212,25 @@ export default function ActiveCarriers() {
       case "active":
         return (
           <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-            ✅ Active
+            <span className="inline-flex items-center gap-1">
+              <FaCircleCheck /> Active
+            </span>
           </span>
         );
       case "inactive":
         return (
           <span className="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full">
-            ⏸️ Inactive
+            <span className="inline-flex items-center gap-1">
+              <FaCirclePause /> Inactive
+            </span>
           </span>
         );
       case "suspended":
         return (
           <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">
-            ⚠️ Suspended
+            <span className="inline-flex items-center gap-1">
+              <FaTriangleExclamation /> Suspended
+            </span>
           </span>
         );
       default:
@@ -236,6 +250,11 @@ export default function ActiveCarriers() {
     );
   }
 
+  const getStatCardClass = (active: boolean) =>
+    `bg-white p-4 rounded-xl shadow border transition-all text-left ${
+      active ? "ring-2 ring-blue-500 border-blue-200" : "border-transparent"
+    } hover:shadow-md hover:-translate-y-0.5`;
+
   return (
     <div>
       <Toaster position="top-right" />
@@ -250,40 +269,64 @@ export default function ActiveCarriers() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
-        <div className="bg-white p-4 rounded-xl shadow">
+        <button
+          type="button"
+          onClick={() => setFilter("all")}
+          className={getStatCardClass(filter === "all")}
+        >
           <div className="text-sm text-gray-500">Total Carriers</div>
           <div className="text-2xl font-bold">{stats.total}</div>
-        </div>
-        <div className="bg-white p-4 rounded-xl shadow">
+        </button>
+        <button
+          type="button"
+          onClick={() => setFilter("active")}
+          className={getStatCardClass(filter === "active")}
+        >
           <div className="text-sm text-gray-500">Active</div>
           <div className="text-2xl font-bold text-green-600">
             {stats.active}
           </div>
-        </div>
-        <div className="bg-white p-4 rounded-xl shadow">
+        </button>
+        <button
+          type="button"
+          onClick={() => setFilter("pending")}
+          className={getStatCardClass(filter === "pending")}
+        >
           <div className="text-sm text-gray-500">Pending</div>
           <div className="text-2xl font-bold text-yellow-600">
             {stats.pending}
           </div>
-        </div>
-        <div className="bg-white p-4 rounded-xl shadow">
+        </button>
+        <button
+          type="button"
+          onClick={() => setFilter("inactive")}
+          className={getStatCardClass(filter === "inactive")}
+        >
           <div className="text-sm text-gray-500">Inactive</div>
           <div className="text-2xl font-bold text-gray-600">
             {stats.inactive}
           </div>
-        </div>
-        <div className="bg-white p-4 rounded-xl shadow">
+        </button>
+        <button
+          type="button"
+          onClick={() => setFilter("all")}
+          className={getStatCardClass(filter === "all")}
+        >
           <div className="text-sm text-gray-500">Total Earnings</div>
           <div className="text-2xl font-bold text-purple-600">
             M{stats.totalEarnings}
           </div>
-        </div>
-        <div className="bg-white p-4 rounded-xl shadow">
+        </button>
+        <button
+          type="button"
+          onClick={() => setFilter("all")}
+          className={getStatCardClass(filter === "all")}
+        >
           <div className="text-sm text-gray-500">Total Deliveries</div>
           <div className="text-2xl font-bold text-blue-600">
             {stats.totalDeliveries}
           </div>
-        </div>
+        </button>
       </div>
 
       {/* Filters */}
@@ -343,7 +386,7 @@ export default function ActiveCarriers() {
       {/* Carriers Table */}
       {filteredCarriers.length === 0 ? (
         <div className="bg-white rounded-xl shadow p-8 text-center">
-          <div className="text-6xl mb-4">🏍️</div>
+          <FaMotorcycle className="text-6xl mb-4 mx-auto text-gray-400" />
           <h3 className="text-xl font-semibold text-gray-700 mb-2">
             No carriers found
           </h3>
@@ -417,8 +460,12 @@ export default function ActiveCarriers() {
                         <div className="text-gray-500">
                           {carrier.licensePlate}
                         </div>
-                        <div className="text-gray-500">📱 {carrier.phone}</div>
-                        <div className="text-gray-500">📍 {carrier.city}</div>
+                        <div className="text-gray-500 inline-flex items-center gap-2">
+                          <FaMobileScreen /> {carrier.phone}
+                        </div>
+                        <div className="text-gray-500 inline-flex items-center gap-2">
+                          <FaLocationDot /> {carrier.city}
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -446,7 +493,9 @@ export default function ActiveCarriers() {
                         {getStatusBadge(carrier.status, carrier.isApproved)}
                         {carrier.currentLocation && (
                           <div className="text-xs text-gray-500">
-                            📍 Live location
+                            <span className="inline-flex items-center gap-1">
+                              <FaLocationDot /> Live location
+                            </span>
                           </div>
                         )}
                       </div>
@@ -536,7 +585,7 @@ export default function ActiveCarriers() {
                   onClick={() => setSelectedCarrier(null)}
                   className="text-gray-400 hover:text-gray-600 text-2xl"
                 >
-                  ✕
+                  <FaXmark />
                 </button>
               </div>
 
@@ -639,7 +688,7 @@ export default function ActiveCarriers() {
                         <span>Status:</span>
                         {getStatusBadge(
                           selectedCarrier.status,
-                          selectedCarrier.isApproved
+                          selectedCarrier.isApproved,
                         )}
                       </div>
 
@@ -651,7 +700,7 @@ export default function ActiveCarriers() {
                                 onClick={() => {
                                   updateCarrierStatus(
                                     selectedCarrier.id,
-                                    "inactive"
+                                    "inactive",
                                   );
                                   setSelectedCarrier(null);
                                 }}
@@ -664,7 +713,7 @@ export default function ActiveCarriers() {
                                 onClick={() => {
                                   updateCarrierStatus(
                                     selectedCarrier.id,
-                                    "active"
+                                    "active",
                                   );
                                   setSelectedCarrier(null);
                                 }}
@@ -701,7 +750,7 @@ export default function ActiveCarriers() {
               {selectedCarrier.currentLocation && (
                 <div className="mt-6 p-4 bg-blue-50 rounded-lg">
                   <div className="flex items-center">
-                    <span className="text-blue-600 mr-2">📍</span>
+                    <FaLocationDot className="text-blue-600 mr-2" />
                     <div>
                       <h4 className="font-medium text-blue-800">
                         Live Location Available

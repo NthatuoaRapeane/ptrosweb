@@ -1,5 +1,5 @@
 // apps/coordinator/src/AppRouter.tsx
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { db } from "@config";
 import { doc, getDoc } from "firebase/firestore";
@@ -18,6 +18,8 @@ import CustomerList from "./CustomerList";
 import CustomerDetails from "./CustomerDetails";
 import LiveMap from "./LiveMap";
 import Analytics from "./Analytics";
+import MapManagement from "./MapManagement";
+import RouteOptimizationCenter from "./RouteOptimizationCenter";
 import Settings from "./Settings";
 
 type Props = {
@@ -25,13 +27,8 @@ type Props = {
 };
 
 export default function AppRouter({ user }: Props) {
-  const location = useLocation();
   const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-
-  const isTrackingRoute = /^\/deliveries\/[^/]+\/track$/.test(
-    location.pathname,
-  );
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -57,23 +54,12 @@ export default function AppRouter({ user }: Props) {
     );
   }
 
-  if (isTrackingRoute) {
-    return (
-      <div className="min-h-screen bg-black">
-        <Routes>
-          <Route path="/deliveries/:id/track" element={<DeliveryTrackingMap />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
-      </div>
-    );
-  }
-
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 min-w-0 flex flex-col">
         <Header user={user} userProfile={userProfile} />
-        <main className="flex-1 p-6">
+        <main className="flex-1 min-h-0 overflow-y-auto p-4 md:p-6">
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route
@@ -94,6 +80,11 @@ export default function AppRouter({ user }: Props) {
             <Route path="/customers" element={<CustomerList />} />
             <Route path="/customers/:id" element={<CustomerDetails />} />
             <Route path="/tracking/live" element={<LiveMap />} />
+            <Route
+              path="/routes/optimization"
+              element={<RouteOptimizationCenter />}
+            />
+            <Route path="/routes/management" element={<MapManagement />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />

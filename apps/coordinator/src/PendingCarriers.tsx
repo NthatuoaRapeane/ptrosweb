@@ -1,6 +1,6 @@
 // apps/coordinator/src/PendingCarriers.tsx
 import { useState, useEffect } from "react";
-import { db } from "@config";
+import { auth, db } from "@config";
 import {
   collection,
   query,
@@ -10,10 +10,9 @@ import {
   doc,
 } from "firebase/firestore";
 import { toast, Toaster } from "react-hot-toast";
-import {
-  writeTimestamp,
-  getTimeServiceStatus,
-} from "./services/timeService";
+import { writeTimestamp, getTimeServiceStatus } from "./services/timeService";
+import { FaCircleCheck } from "react-icons/fa6";
+import { useNavigate } from "react-router-dom";
 
 interface PendingCarrier {
   id: string;
@@ -27,6 +26,7 @@ interface PendingCarrier {
 }
 
 export default function PendingCarriers() {
+  const navigate = useNavigate();
   const [carriers, setCarriers] = useState<PendingCarrier[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -39,7 +39,7 @@ export default function PendingCarriers() {
       const q = query(
         collection(db, "users"),
         where("role", "==", "carrier"),
-        where("isApproved", "==", false)
+        where("isApproved", "==", false),
       );
 
       const snapshot = await getDocs(q);
@@ -70,23 +70,19 @@ export default function PendingCarriers() {
 
   const approveCarrier = async (carrierId: string) => {
     try {
-      const timestamp = await writeTimestamp(
-        `carriers/${carrierId}/approved`
-      );
+      const timestamp = await writeTimestamp(`carriers/${carrierId}/approved`);
       const timeServiceStatus = getTimeServiceStatus();
 
       await updateDoc(doc(db, "users", carrierId), {
         isApproved: true,
         status: "active",
         approvedAt: timestamp,
-        approvedBy: "coordinator", // TODO: Replace with actual coordinator ID
+        approvedBy: auth.currentUser?.uid || "system",
         timeSource: timeServiceStatus.primarySource,
       });
 
       toast.success("Carrier approved successfully!");
       fetchPendingCarriers(); // Refresh list
-
-      // TODO: Send SMS notification to carrier via Twilio
     } catch (error) {
       console.error("Error approving carrier:", error);
       toast.error("Failed to approve carrier");
@@ -102,16 +98,14 @@ export default function PendingCarriers() {
         return;
       }
 
-      const timestamp = await writeTimestamp(
-        `carriers/${carrierId}/rejected`
-      );
+      const timestamp = await writeTimestamp(`carriers/${carrierId}/rejected`);
       const timeServiceStatus = getTimeServiceStatus();
 
       await updateDoc(doc(db, "users", carrierId), {
         status: "rejected",
         rejectedAt: timestamp,
         rejectedReason: reason,
-        rejectedBy: "coordinator", // TODO: Replace with actual coordinator ID
+        rejectedBy: auth.currentUser?.uid || "system",
         timeSource: timeServiceStatus.primarySource,
       });
 
@@ -147,7 +141,7 @@ export default function PendingCarriers() {
 
       {carriers.length === 0 ? (
         <div className="bg-white rounded-xl shadow-md p-12 text-center">
-          <div className="text-7xl mb-4">🎉</div>
+          <FaCircleCheck className="text-7xl mb-4 mx-auto text-green-500" />
           <h3 className="text-2xl font-bold text-gray-800 mb-3">
             No pending approvals
           </h3>
@@ -210,23 +204,29 @@ export default function PendingCarriers() {
                     <td className="px-6 py-4 text-sm text-gray-500">
                       {carrier.createdAt.toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-4 text-sm font-medium">
-                      <div className="flex space-x-3">
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col space-y-2">
                         <button
-                          onClick={() => approveCarrier(carrier.id)}
-                          className="px-4 py-2 bg-success text-white rounded-lg hover:bg-success-dark transition-all shadow-sm hover:shadow-md font-semibold"
+                          onClick={() => navigate(`/carriers/${carrier.id}`)}
+                          className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200 text-center"
                         >
-                          ✅ Approve
+                          View
                         </button>
-                        <button
-                          onClick={() => rejectCarrier(carrier.id)}
-                          className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all shadow-sm hover:shadow-md font-semibold"
-                        >
-                          ❌ Reject
-                        </button>
-                        <button className="px-4 py-2 border-2 border-primary text-primary rounded-lg hover:bg-primary-bg transition-all font-semibold">
-                          👁️ View
-                        </button>
+
+                        <div className="flex space-x-1">
+                          <button
+                            onClick={() => approveCarrier(carrier.id)}
+                            className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs hover:bg-green-200"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => rejectCarrier(carrier.id)}
+                            className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200"
+                          >
+                            Reject
+                          </button>
+                        </div>
                       </div>
                     </td>
                   </tr>
