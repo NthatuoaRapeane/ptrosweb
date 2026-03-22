@@ -612,3 +612,151 @@
 2026-03-22T19:17:41.004596Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
 2026-03-22T19:17:41.191969Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf(".turbo\\daemon\\aeac7d1050da9891-turbo.log.2026-03-22"), AnchoredSystemPathBuf("apps\\carrier\\src\\Register.tsx")}
 2026-03-22T19:17:41.191996Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }, WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:17:42.653213Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf(".turbo\\daemon\\aeac7d1050da9891-turbo.log.2026-03-22")}
+2026-03-22T19:17:42.653239Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2026-03-22T19:17:46.521702Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\src\\Register.tsx")}
+2026-03-22T19:17:46.521724Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:17:48.461700Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:18:24.206657Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier"), AnchoredSystemPathBuf("apps\\carrier\\vite.config.ts.timestamp-1774207104105-acc5a63386feb.mjs")}
+2026-03-22T19:18:24.206725Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:18:25.661499Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:18:33.091977Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\dist\\assets\\index-D14QNEZP.css")}
+2026-03-22T19:18:33.092152Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:18:34.564573Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\dist"), AnchoredSystemPathBuf("apps\\carrier\\dist\\assets\\index-P-KaUwZq.js"), AnchoredSystemPathBuf("apps\\carrier\\dist\\index.html"), AnchoredSystemPathBuf("apps\\carrier\\dist\\assets")}
+2026-03-22T19:18:34.564604Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:18:34.575901Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:18:37.996985Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\dist\\assets"), AnchoredSystemPathBuf("apps\\carrier\\dist")}
+2026-03-22T19:18:37.997008Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:18:39.774979Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\dist"), AnchoredSystemPathBuf("apps\\carrier\\dist\\assets\\index-DG43Mz3s.js"), AnchoredSystemPathBuf("apps\\carrier\\dist\\assets"), AnchoredSystemPathBuf("apps\\carrier\\dist\\index.html"), AnchoredSystemPathBuf("apps\\carrier\\dist\\assets\\index-D14QNEZP.css")}
+2026-03-22T19:18:39.775009Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:18:39.783928Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:22:20.994063Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\src\\Register.tsx")}
+2026-03-22T19:22:20.994093Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:22:45.502659Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\src\\Register.tsx")}
+2026-03-22T19:22:45.502713Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:22:47.265970Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:22:47.272372Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\src\\Register.tsx")}
+2026-03-22T19:22:47.272391Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:22:47.301613Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:22:55.297735Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier"), AnchoredSystemPathBuf("apps\\carrier\\vite.config.ts.timestamp-1774207375250-51974e191e81f8.mjs")}
+2026-03-22T19:22:55.297763Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:22:57.136649Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:22:57.142116Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier")}
+2026-03-22T19:22:57.142147Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:22:57.194511Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:23:04.430858Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\dist\\assets\\index-DG43Mz3s.js"), AnchoredSystemPathBuf("apps\\carrier\\dist\\assets"), AnchoredSystemPathBuf("apps\\carrier\\dist\\index.html"), AnchoredSystemPathBuf("apps\\carrier\\dist\\assets\\index-D14QNEZP.css")}
+2026-03-22T19:23:04.430922Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:23:05.795612Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\dist")}
+2026-03-22T19:23:05.795634Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:23:05.803806Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:23:09.194624Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\dist"), AnchoredSystemPathBuf("apps\\carrier\\dist\\assets\\index-Bf3kkvXI.js"), AnchoredSystemPathBuf("apps\\carrier\\dist\\assets\\index-D14QNEZP.css"), AnchoredSystemPathBuf("apps\\carrier\\dist\\index.html"), AnchoredSystemPathBuf("apps\\carrier\\dist\\assets")}
+2026-03-22T19:23:09.194747Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:27:35.394542Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\src\\Register.tsx")}
+2026-03-22T19:27:35.394575Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:27:51.603225Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\src\\Register.tsx")}
+2026-03-22T19:27:51.603259Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:27:52.880697Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:28:00.202128Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\vite.config.ts.timestamp-1774207680133-dbcc886ca43bb.mjs"), AnchoredSystemPathBuf("apps\\carrier")}
+2026-03-22T19:28:00.202159Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:28:01.733918Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:28:09.191850Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\dist\\assets\\index-Bf3kkvXI.js"), AnchoredSystemPathBuf("apps\\carrier\\dist\\assets"), AnchoredSystemPathBuf("apps\\carrier\\dist\\assets\\index-D14QNEZP.css"), AnchoredSystemPathBuf("apps\\carrier\\dist\\index.html")}
+2026-03-22T19:28:09.191878Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:28:10.429578Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\dist")}
+2026-03-22T19:28:10.429602Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:28:10.437442Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:28:13.797218Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\dist\\assets"), AnchoredSystemPathBuf("apps\\carrier\\dist\\assets\\index-D14QNEZP.css"), AnchoredSystemPathBuf("apps\\carrier\\dist\\index.html"), AnchoredSystemPathBuf("apps\\carrier\\dist"), AnchoredSystemPathBuf("apps\\carrier\\dist\\assets\\index-BiPIkDds.js")}
+2026-03-22T19:28:13.797247Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:29:40.425004Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\coordinator\\src\\ActiveCarriers.tsx")}
+2026-03-22T19:29:40.425022Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/coordinator"), path: AnchoredSystemPathBuf("apps\\coordinator") }}))
+2026-03-22T19:29:43.351478Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\coordinator\\src\\DeliveryDetails.tsx"), AnchoredSystemPathBuf("apps\\coordinator\\src\\CarrierDetails.tsx"), AnchoredSystemPathBuf("apps\\coordinator\\src\\PendingCarriers.tsx"), AnchoredSystemPathBuf("apps\\coordinator\\src\\ActiveCarriers.tsx")}
+2026-03-22T19:29:43.351502Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/coordinator"), path: AnchoredSystemPathBuf("apps\\coordinator") }}))
+2026-03-22T19:29:43.364256Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:29:43.710526Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\coordinator\\src\\PendingCarriers.tsx"), AnchoredSystemPathBuf("apps\\coordinator\\src\\DeliveryDetails.tsx"), AnchoredSystemPathBuf("apps\\coordinator\\src\\ActiveCarriers.tsx"), AnchoredSystemPathBuf("apps\\coordinator\\src\\CarrierDetails.tsx")}
+2026-03-22T19:29:43.728152Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/coordinator"), path: AnchoredSystemPathBuf("apps\\coordinator") }}))
+2026-03-22T19:29:48.904809Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:30:24.790428Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\coordinator"), AnchoredSystemPathBuf("apps\\coordinator\\vite.config.ts.timestamp-1774207824742-44532f6a53f5b8.mjs")}
+2026-03-22T19:30:24.790445Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/coordinator"), path: AnchoredSystemPathBuf("apps\\coordinator") }}))
+2026-03-22T19:30:25.867351Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:30:25.870850Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\coordinator")}
+2026-03-22T19:30:25.870876Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/coordinator"), path: AnchoredSystemPathBuf("apps\\coordinator") }}))
+2026-03-22T19:30:25.885790Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:30:34.588565Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\coordinator\\dist\\assets\\index-DxY2B6KA.js"), AnchoredSystemPathBuf("apps\\coordinator\\dist\\assets"), AnchoredSystemPathBuf("apps\\coordinator\\dist\\index.html"), AnchoredSystemPathBuf("apps\\coordinator\\dist\\assets\\index-cUddaN4S.css")}
+2026-03-22T19:30:34.588586Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/coordinator"), path: AnchoredSystemPathBuf("apps\\coordinator") }}))
+2026-03-22T19:30:35.983716Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\coordinator\\dist")}
+2026-03-22T19:30:35.983751Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/coordinator"), path: AnchoredSystemPathBuf("apps\\coordinator") }}))
+2026-03-22T19:30:35.996604Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:30:39.698794Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\coordinator\\dist"), AnchoredSystemPathBuf("apps\\coordinator\\dist\\assets\\index-BAD9yEuD.js"), AnchoredSystemPathBuf("apps\\coordinator\\dist\\assets"), AnchoredSystemPathBuf("apps\\coordinator\\dist\\assets\\index-cUddaN4S.css"), AnchoredSystemPathBuf("apps\\coordinator\\dist\\index.html")}
+2026-03-22T19:30:39.698817Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/coordinator"), path: AnchoredSystemPathBuf("apps\\coordinator") }}))
+2026-03-22T19:30:41.709608Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\coordinator\\dist\\assets")}
+2026-03-22T19:30:41.709626Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/coordinator"), path: AnchoredSystemPathBuf("apps\\coordinator") }}))
+2026-03-22T19:30:41.717515Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:34:26.202834Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\src\\Register.tsx")}
+2026-03-22T19:34:26.202861Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:34:33.196033Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\src\\Register.tsx")}
+2026-03-22T19:34:33.196063Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:34:34.096311Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:34:51.390694Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\vite.config.ts.timestamp-1774208091342-2da34d24cdd538.mjs"), AnchoredSystemPathBuf("apps\\carrier")}
+2026-03-22T19:34:51.390719Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:34:52.545429Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:34:57.200571Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\dist\\assets"), AnchoredSystemPathBuf("apps\\carrier\\dist\\assets\\index-BiPIkDds.js"), AnchoredSystemPathBuf("apps\\carrier\\dist\\assets\\index-D14QNEZP.css"), AnchoredSystemPathBuf("apps\\carrier\\dist\\index.html")}
+2026-03-22T19:34:57.200598Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:34:58.609119Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\dist")}
+2026-03-22T19:34:58.609147Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:34:58.623140Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:35:01.990840Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\dist\\assets")}
+2026-03-22T19:35:01.990864Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:35:03.757204Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\dist"), AnchoredSystemPathBuf("apps\\carrier\\dist\\assets"), AnchoredSystemPathBuf("apps\\carrier\\dist\\assets\\index-Bcbc6CV2.js"), AnchoredSystemPathBuf("apps\\carrier\\dist\\assets\\index-qZcXxMGW.css"), AnchoredSystemPathBuf("apps\\carrier\\dist\\index.html")}
+2026-03-22T19:35:03.757234Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:35:03.764773Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:44:38.694820Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\src\\carrierService.ts")}
+2026-03-22T19:44:38.694848Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:44:52.095360Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\src\\carrierService.ts")}
+2026-03-22T19:44:52.095390Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:44:53.523174Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:45:30.405283Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\src\\Dashboard.tsx")}
+2026-03-22T19:45:30.405303Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:45:40.717016Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\src\\Dashboard.tsx")}
+2026-03-22T19:45:40.717065Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:45:44.476062Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:45:53.501397Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier"), AnchoredSystemPathBuf("apps\\carrier\\vite.config.ts.timestamp-1774208753438-9092423e8f9c38.mjs")}
+2026-03-22T19:45:53.501420Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:45:54.860078Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:46:02.395921Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\dist\\assets\\index-Bcbc6CV2.js"), AnchoredSystemPathBuf("apps\\carrier\\dist\\assets"), AnchoredSystemPathBuf("apps\\carrier\\dist\\index.html"), AnchoredSystemPathBuf("apps\\carrier\\dist\\assets\\index-qZcXxMGW.css")}
+2026-03-22T19:46:02.396001Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:46:03.611133Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\dist")}
+2026-03-22T19:46:03.611156Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:46:03.618319Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:46:07.225918Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\dist"), AnchoredSystemPathBuf("apps\\carrier\\dist\\assets"), AnchoredSystemPathBuf("apps\\carrier\\dist\\assets\\index--PypLbvl.css"), AnchoredSystemPathBuf("apps\\carrier\\dist\\assets\\index-DH7OjxB-.js"), AnchoredSystemPathBuf("apps\\carrier\\dist\\index.html")}
+2026-03-22T19:46:07.225947Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:48:14.104550Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\src\\Login.tsx")}
+2026-03-22T19:48:14.104573Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:48:16.141705Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\src\\Login.tsx")}
+2026-03-22T19:48:16.141738Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:48:16.162658Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:48:27.926388Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\src\\Register.tsx")}
+2026-03-22T19:48:27.926437Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:48:30.040563Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\src\\Register.tsx"), AnchoredSystemPathBuf("apps\\carrier\\src\\Login.tsx")}
+2026-03-22T19:48:30.040584Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:48:33.322432Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:48:56.293991Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier"), AnchoredSystemPathBuf("apps\\carrier\\vite.config.ts.timestamp-1774208936289-78207180e19f7.mjs")}
+2026-03-22T19:48:56.294051Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:48:57.568492Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:48:57.573094Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier"), AnchoredSystemPathBuf("apps\\carrier\\vite.config.ts.timestamp-1774208936289-78207180e19f7.mjs")}
+2026-03-22T19:48:57.573120Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:48:57.595689Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:49:05.489044Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\dist\\assets\\index-DH7OjxB-.js"), AnchoredSystemPathBuf("apps\\carrier\\dist\\index.html"), AnchoredSystemPathBuf("apps\\carrier\\dist\\assets"), AnchoredSystemPathBuf("apps\\carrier\\dist\\assets\\index--PypLbvl.css")}
+2026-03-22T19:49:05.489112Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:49:06.741040Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\dist")}
+2026-03-22T19:49:06.741063Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:49:06.748439Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:49:10.507838Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\dist\\assets\\index-mh6ck86L.css"), AnchoredSystemPathBuf("apps\\carrier\\dist\\index.html"), AnchoredSystemPathBuf("apps\\carrier\\dist"), AnchoredSystemPathBuf("apps\\carrier\\dist\\assets\\index-BM2q2ZlG.js"), AnchoredSystemPathBuf("apps\\carrier\\dist\\assets")}
+2026-03-22T19:49:10.507919Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:49:12.374133Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\carrier\\dist")}
+2026-03-22T19:49:12.374160Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@ptros/carrier"), path: AnchoredSystemPathBuf("apps\\carrier") }}))
+2026-03-22T19:49:12.382753Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2026-03-22T19:53:13.892303Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("firestore.rules")}
+2026-03-22T19:53:13.892339Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2026-03-22T19:53:19.012183Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("firestore.rules")}
+2026-03-22T19:53:19.012243Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2026-03-22T19:53:19.100562Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("firestore.rules")}
+2026-03-22T19:53:19.100614Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))

@@ -628,9 +628,7 @@ export default function Register() {
                       autoCapitalize="words"
                       required
                     />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Letters only, plus spaces, apostrophes, and hyphens.
-                    </p>
+
                   </div>
 
                   <div>
@@ -659,7 +657,6 @@ export default function Register() {
                           value={formData.password}
                           onChange={handleChange}
                           className="w-full p-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="At least 8 characters"
                           minLength={8}
                           required
                         />
@@ -690,7 +687,6 @@ export default function Register() {
                           value={formData.confirmPassword}
                           onChange={handleChange}
                           className="w-full p-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="Confirm your password"
                           required
                         />
                         <button

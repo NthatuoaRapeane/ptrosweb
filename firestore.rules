@@ -29,6 +29,8 @@ service cloud.firestore {
       return (
         // Keep same status for metadata/location-only updates
         request.resource.data.status == resource.data.status
+        // Carrier accepts a coordinator-assigned delivery
+        || (resource.data.status == 'assigned' && request.resource.data.status == 'accepted')
         // Explicit transitions requested
         || (resource.data.status == 'picked_up' && request.resource.data.status == 'in_transit')
         || (resource.data.status == 'in_transit' && request.resource.data.status == 'delivered')
