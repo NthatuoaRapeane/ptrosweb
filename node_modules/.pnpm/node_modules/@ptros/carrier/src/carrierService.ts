@@ -462,6 +462,32 @@ export class CarrierService {
     }
   }
 
+  static async getDeliveredDeliveries(): Promise<Delivery[]> {
+    try {
+      const user = auth.currentUser;
+      if (!user) return [];
+
+      const q = query(
+        collection(db, "deliveries"),
+        where("carrierId", "==", user.uid),
+        where("status", "==", "delivered"),
+        orderBy("deliveryTime", "desc"),
+      );
+
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(
+        (doc) =>
+          ({
+            id: doc.id,
+            ...doc.data(),
+          }) as Delivery,
+      );
+    } catch (error) {
+      console.error("Error fetching delivered deliveries:", error);
+      return [];
+    }
+  }
+
   static async updateDeliveryStatus(
     deliveryId: string,
     status: Delivery["status"],

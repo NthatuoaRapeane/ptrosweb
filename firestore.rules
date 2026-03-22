@@ -25,6 +25,23 @@ service cloud.firestore {
       return isAuth() && getUserRoleFromDoc(request.auth.uid) == 'customer';
     }
 
+    function isAllowedCarrierStatusTransition() {
+      return (
+        // Keep same status for metadata/location-only updates
+        request.resource.data.status == resource.data.status
+        // Explicit transitions requested
+        || (resource.data.status == 'picked_up' && request.resource.data.status == 'in_transit')
+        || (resource.data.status == 'in_transit' && request.resource.data.status == 'delivered')
+        // Existing carrier flow transitions used by app
+        || (resource.data.status == 'accepted' && request.resource.data.status == 'picked_up')
+        || (resource.data.status == 'picked_up' && request.resource.data.status == 'stuck')
+        || (resource.data.status == 'stuck' && request.resource.data.status == 'in_transit')
+        || (resource.data.status == 'in_transit' && request.resource.data.status == 'stuck')
+        || (resource.data.status == 'in_transit' && request.resource.data.status == 'out_for_delivery')
+        || (resource.data.status == 'out_for_delivery' && request.resource.data.status == 'delivered')
+      );
+    }
+
     
 
     // ==================== USERS COLLECTION ====================
@@ -83,6 +100,7 @@ service cloud.firestore {
       // CARRIER: Update an already-assigned own delivery (status, timing, OTP verification, live location)
       allow update: if isCarrier()
         && resource.data.carrierId == request.auth.uid
+        && isAllowedCarrierStatusTransition()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
           'status',
           'currentLocation',
@@ -92,6 +110,7 @@ service cloud.firestore {
           'proofOfDelivery',
           'pickupTime',
           'inTransitTime',
+          'outForDeliveryTime',
           'deliveryTime',
           'acceptedAt',
           'updatedAt',

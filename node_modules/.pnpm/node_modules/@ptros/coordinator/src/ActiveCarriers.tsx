@@ -636,7 +636,7 @@ export default function ActiveCarriers() {
                         </span>
                       </div>
                       <div className="flex items-center">
-                        <span className="text-gray-500 w-24">Plate:</span>
+                        <span className="text-gray-500 w-24">Vehicle ID:</span>
                         <span className="font-medium">
                           {selectedCarrier.licensePlate}
                         </span>
