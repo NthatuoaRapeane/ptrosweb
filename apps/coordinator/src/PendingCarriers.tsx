@@ -197,7 +197,7 @@ export default function PendingCarriers() {
                           {carrier.vehicleType || "Not specified"}
                         </div>
                         <div className="text-gray-500">
-                          {carrier.licensePlate || "No vehicle ID"}
+                          {carrier.licensePlate || "No plate"}
                         </div>
                       </div>
                     </td>

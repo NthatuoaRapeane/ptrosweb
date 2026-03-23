@@ -20,12 +20,15 @@ import { getCarrierLiveTrackUrl } from "./liveTrackUrl";
 
 interface DashboardProps {
   user: User;
-  onNavigate?: (page: "dashboard" | "tasks" | "deliveries") => void;
 }
 
-export default function Dashboard({ user, onNavigate }: DashboardProps) {
+export default function Dashboard({ user }: DashboardProps) {
   const navigate = useNavigate();
-  type StatKey = "todayDeliveries" | "totalDeliveries" | "totalEarnings" | "rating";
+  type StatKey =
+    | "todayDeliveries"
+    | "totalDeliveries"
+    | "totalEarnings"
+    | "rating";
 
   const [carrierProfile, setCarrierProfile] = useState<any>(null);
   const [activeDelivery, setActiveDelivery] = useState<Delivery | null>(null);
@@ -408,7 +411,9 @@ export default function Dashboard({ user, onNavigate }: DashboardProps) {
                 <p className="text-3xl font-bold mt-2">
                   {stats.totalDeliveries}
                 </p>
-                <p className="text-blue-100 text-xs mt-2">Tap to view history</p>
+                <p className="text-blue-100 text-xs mt-2">
+                  Tap to view history
+                </p>
               </div>
               <div className="bg-white/20 rounded-xl p-3">
                 <i className="fa-solid fa-box-open text-2xl"></i>
@@ -429,7 +434,9 @@ export default function Dashboard({ user, onNavigate }: DashboardProps) {
                 <p className="text-3xl font-bold mt-2">
                   {formatCurrency(stats.totalEarnings)}
                 </p>
-                <p className="text-purple-100 text-xs mt-2">Tap for breakdown</p>
+                <p className="text-purple-100 text-xs mt-2">
+                  Tap for breakdown
+                </p>
               </div>
               <div className="bg-white/20 rounded-xl p-3">
                 <i className="fa-solid fa-chart-line text-2xl"></i>
@@ -458,6 +465,66 @@ export default function Dashboard({ user, onNavigate }: DashboardProps) {
               <div className="bg-white/20 rounded-xl p-3">
                 <i className="fa-solid fa-face-smile text-2xl"></i>
               </div>
+            </div>
+          </button>
+        </div>
+
+        {/* Quick Access Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <button
+            type="button"
+            onClick={() => navigate("/tasks")}
+            className="text-left bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl p-5 shadow-xl hover:shadow-emerald-500/40 hover:-translate-y-0.5 transition-all"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-emerald-100 text-xs uppercase tracking-wider font-semibold">
+                  Tasks
+                </p>
+                <p className="text-xl font-bold mt-1">Open Tasks</p>
+                <p className="text-emerald-100 text-sm mt-1">
+                  Accept assigned or available jobs
+                </p>
+              </div>
+              <i className="fa-solid fa-list-check text-2xl"></i>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigate("/deliveries")}
+            className="text-left bg-gradient-to-r from-fuchsia-500 to-violet-600 text-white rounded-2xl p-5 shadow-xl hover:shadow-fuchsia-500/40 hover:-translate-y-0.5 transition-all"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-fuchsia-100 text-xs uppercase tracking-wider font-semibold">
+                  Deliveries
+                </p>
+                <p className="text-xl font-bold mt-1">My Deliveries</p>
+                <p className="text-fuchsia-100 text-sm mt-1">
+                  Update delivery statuses quickly
+                </p>
+              </div>
+              <i className="fa-solid fa-box text-2xl"></i>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigate("/deliveries")}
+            className="text-left bg-gradient-to-r from-slate-700 to-gray-900 text-white rounded-2xl p-5 shadow-xl hover:shadow-gray-500/40 hover:-translate-y-0.5 transition-all"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-slate-200 text-xs uppercase tracking-wider font-semibold">
+                  Recent Deliveries
+                </p>
+                <p className="text-xl font-bold mt-1">View History</p>
+                <p className="text-slate-200 text-sm mt-1">
+                  See completed and active deliveries
+                </p>
+              </div>
+              <i className="fa-solid fa-clock-rotate-left text-2xl"></i>
             </div>
           </button>
         </div>
@@ -605,18 +672,26 @@ export default function Dashboard({ user, onNavigate }: DashboardProps) {
                   </div>
 
                   <div className="mt-4">
-                    <button
-                      onClick={() =>
-                        window.open(
-                          getCarrierLiveTrackUrl(activeDelivery.id),
-                          "_blank",
-                          "noopener,noreferrer",
-                        )
-                      }
-                      className="px-4 py-2 bg-cyan-500/90 text-white rounded-lg text-sm font-semibold hover:bg-cyan-500"
-                    >
-                      Live Track
-                    </button>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() =>
+                          window.open(
+                            getCarrierLiveTrackUrl(activeDelivery.id),
+                            "_blank",
+                            "noopener,noreferrer",
+                          )
+                        }
+                        className="px-4 py-2 bg-cyan-500/90 text-white rounded-lg text-sm font-semibold hover:bg-cyan-500"
+                      >
+                        Live Track
+                      </button>
+                      <button
+                        onClick={() => setShowJobDetailsModal(true)}
+                        className="px-4 py-2 bg-white/20 border border-white/40 text-white rounded-lg text-sm font-semibold hover:bg-white/30"
+                      >
+                        Route Details
+                      </button>
+                    </div>
                   </div>
 
                   {/* Progress Bar */}
@@ -654,7 +729,7 @@ export default function Dashboard({ user, onNavigate }: DashboardProps) {
                             proceed with delivery.
                           </p>
                           <button
-                            onClick={() => onNavigate?.("tasks")}
+                            onClick={() => navigate("/tasks")}
                             className="mt-3 px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors"
                           >
                             Go to Tasks to Accept
@@ -822,17 +897,17 @@ export default function Dashboard({ user, onNavigate }: DashboardProps) {
                       Go Available
                     </button>
                   )}
-                  {status === "active" && onNavigate && (
+                  {status === "active" && (
                     <>
                       <button
-                        onClick={() => onNavigate("tasks")}
+                        onClick={() => navigate("/tasks")}
                         className="px-6 py-3 bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 text-white rounded-xl font-bold hover:from-emerald-700 hover:via-green-700 hover:to-teal-700 transition-all shadow-2xl hover:shadow-green-500/50 transform hover:scale-105"
                       >
                         <i className="fa-solid fa-list-check mr-2"></i>
                         View Available Tasks
                       </button>
                       <button
-                        onClick={() => onNavigate("deliveries")}
+                        onClick={() => navigate("/deliveries")}
                         className="px-6 py-3 bg-gradient-to-r from-fuchsia-600 via-purple-600 to-violet-600 text-white rounded-xl font-bold hover:from-fuchsia-700 hover:via-purple-700 hover:to-violet-700 transition-all shadow-2xl hover:shadow-purple-500/50 transform hover:scale-105"
                       >
                         <i className="fa-solid fa-clock-rotate-left mr-2"></i>
@@ -865,9 +940,11 @@ export default function Dashboard({ user, onNavigate }: DashboardProps) {
           ) : (
             <div className="divide-y divide-gray-100">
               {deliveries.map((delivery) => (
-                <div
+                <button
                   key={delivery.id}
-                  className="p-4 hover:bg-gray-50 transition-colors"
+                  type="button"
+                  onClick={() => navigate("/deliveries")}
+                  className="w-full text-left p-4 hover:bg-gray-50 transition-colors"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-4">
                     <div className="flex-1 min-w-0">
@@ -895,7 +972,7 @@ export default function Dashboard({ user, onNavigate }: DashboardProps) {
                       </p>
                     </div>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           )}
@@ -928,35 +1005,56 @@ export default function Dashboard({ user, onNavigate }: DashboardProps) {
               {statsModalLoading ? (
                 <div className="py-12 text-center">
                   <div className="w-10 h-10 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto"></div>
-                  <p className="mt-4 text-gray-600">Loading true stats details...</p>
+                  <p className="mt-4 text-gray-600">
+                    Loading true stats details...
+                  </p>
                 </div>
               ) : (
                 <>
                   {selectedStat === "todayDeliveries" && (
                     <div>
                       <div className="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200">
-                        <p className="text-sm text-emerald-700">Today's completed deliveries</p>
-                        <p className="text-3xl font-bold text-emerald-800">{todayDeliveriesList.length}</p>
+                        <p className="text-sm text-emerald-700">
+                          Today's completed deliveries
+                        </p>
+                        <p className="text-3xl font-bold text-emerald-800">
+                          {todayDeliveriesList.length}
+                        </p>
                       </div>
 
                       {todayDeliveriesList.length === 0 ? (
-                        <p className="text-gray-500">No delivered jobs recorded today.</p>
+                        <p className="text-gray-500">
+                          No delivered jobs recorded today.
+                        </p>
                       ) : (
                         <div className="space-y-3">
                           {todayDeliveriesList.map((delivery) => (
-                            <div key={delivery.id} className="p-4 border border-gray-200 rounded-xl">
+                            <div
+                              key={delivery.id}
+                              className="p-4 border border-gray-200 rounded-xl"
+                            >
                               <div className="flex items-center justify-between gap-4">
                                 <div className="min-w-0">
-                                  <p className="font-mono text-sm font-semibold text-gray-800">{delivery.trackingCode}</p>
-                                  <p className="text-sm text-gray-600 truncate">{delivery.customerName || "Customer"}</p>
+                                  <p className="font-mono text-sm font-semibold text-gray-800">
+                                    {delivery.trackingCode}
+                                  </p>
+                                  <p className="text-sm text-gray-600 truncate">
+                                    {delivery.customerName || "Customer"}
+                                  </p>
                                 </div>
                                 <div className="text-right">
                                   <p className="font-bold text-green-600">
-                                    {formatCurrency(delivery.earnings || delivery.estimatedEarnings || 0)}
+                                    {formatCurrency(
+                                      delivery.earnings ||
+                                        delivery.estimatedEarnings ||
+                                        0,
+                                    )}
                                   </p>
                                   <p className="text-xs text-gray-500">
                                     {toDate(delivery.deliveryTime)
-                                      ? formatTime(toDate(delivery.deliveryTime) as Date)
+                                      ? formatTime(
+                                          toDate(delivery.deliveryTime) as Date,
+                                        )
                                       : "Time N/A"}
                                   </p>
                                 </div>
@@ -971,25 +1069,40 @@ export default function Dashboard({ user, onNavigate }: DashboardProps) {
                   {selectedStat === "totalDeliveries" && (
                     <div>
                       <div className="mb-6 p-4 rounded-xl bg-cyan-50 border border-cyan-200">
-                        <p className="text-sm text-cyan-700">All completed deliveries</p>
-                        <p className="text-3xl font-bold text-cyan-800">{stats.totalDeliveries}</p>
+                        <p className="text-sm text-cyan-700">
+                          All completed deliveries
+                        </p>
+                        <p className="text-3xl font-bold text-cyan-800">
+                          {stats.totalDeliveries}
+                        </p>
                       </div>
 
                       {deliveredHistory.length === 0 ? (
-                        <p className="text-gray-500">No completed deliveries found yet.</p>
+                        <p className="text-gray-500">
+                          No completed deliveries found yet.
+                        </p>
                       ) : (
                         <div className="space-y-3">
                           {deliveredHistory.slice(0, 30).map((delivery) => (
-                            <div key={delivery.id} className="p-4 border border-gray-200 rounded-xl">
+                            <div
+                              key={delivery.id}
+                              className="p-4 border border-gray-200 rounded-xl"
+                            >
                               <div className="flex items-center justify-between gap-4">
                                 <div className="min-w-0">
-                                  <p className="font-mono text-sm font-semibold text-gray-800">{delivery.trackingCode}</p>
-                                  <p className="text-sm text-gray-600 truncate">{delivery.customerName || "Customer"}</p>
+                                  <p className="font-mono text-sm font-semibold text-gray-800">
+                                    {delivery.trackingCode}
+                                  </p>
+                                  <p className="text-sm text-gray-600 truncate">
+                                    {delivery.customerName || "Customer"}
+                                  </p>
                                 </div>
                                 <div className="text-right">
                                   <p className="text-sm font-semibold text-gray-800">
                                     {toDate(delivery.deliveryTime)
-                                      ? formatDate(toDate(delivery.deliveryTime) as Date)
+                                      ? formatDate(
+                                          toDate(delivery.deliveryTime) as Date,
+                                        )
                                       : "Date N/A"}
                                   </p>
                                 </div>
@@ -998,7 +1111,8 @@ export default function Dashboard({ user, onNavigate }: DashboardProps) {
                           ))}
                           {deliveredHistory.length > 30 && (
                             <p className="text-xs text-gray-500">
-                              Showing latest 30 of {deliveredHistory.length} deliveries.
+                              Showing latest 30 of {deliveredHistory.length}{" "}
+                              deliveries.
                             </p>
                           )}
                         </div>
@@ -1009,15 +1123,25 @@ export default function Dashboard({ user, onNavigate }: DashboardProps) {
                   {selectedStat === "totalEarnings" && (
                     <div className="space-y-4">
                       <div className="p-4 rounded-xl bg-purple-50 border border-purple-200">
-                        <p className="text-sm text-purple-700">Lifetime earnings</p>
-                        <p className="text-3xl font-bold text-purple-800">{formatCurrency(stats.totalEarnings)}</p>
+                        <p className="text-sm text-purple-700">
+                          Lifetime earnings
+                        </p>
+                        <p className="text-3xl font-bold text-purple-800">
+                          {formatCurrency(stats.totalEarnings)}
+                        </p>
                       </div>
                       <div className="p-4 rounded-xl bg-blue-50 border border-blue-200">
-                        <p className="text-sm text-blue-700">Today's earnings</p>
-                        <p className="text-2xl font-bold text-blue-800">{formatCurrency(stats.todayEarnings)}</p>
+                        <p className="text-sm text-blue-700">
+                          Today's earnings
+                        </p>
+                        <p className="text-2xl font-bold text-blue-800">
+                          {formatCurrency(stats.todayEarnings)}
+                        </p>
                       </div>
                       <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                        <p className="text-sm text-slate-700">Average earnings per completed delivery</p>
+                        <p className="text-sm text-slate-700">
+                          Average earnings per completed delivery
+                        </p>
                         <p className="text-xl font-bold text-slate-800">
                           {formatCurrency(
                             stats.totalDeliveries > 0
@@ -1032,15 +1156,23 @@ export default function Dashboard({ user, onNavigate }: DashboardProps) {
                   {selectedStat === "rating" && (
                     <div className="space-y-4">
                       <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
-                        <p className="text-sm text-amber-700">Current customer rating</p>
+                        <p className="text-sm text-amber-700">
+                          Current customer rating
+                        </p>
                         <div className="mt-1 flex items-center gap-2">
-                          <p className="text-3xl font-bold text-amber-800">{stats.rating.toFixed(1)}</p>
+                          <p className="text-3xl font-bold text-amber-800">
+                            {stats.rating.toFixed(1)}
+                          </p>
                           <i className="fa-solid fa-star text-amber-500 text-xl"></i>
                         </div>
                       </div>
                       <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                        <p className="text-sm text-slate-700">Completed deliveries contributing to experience</p>
-                        <p className="text-2xl font-bold text-slate-800">{stats.totalDeliveries}</p>
+                        <p className="text-sm text-slate-700">
+                          Completed deliveries contributing to experience
+                        </p>
+                        <p className="text-2xl font-bold text-slate-800">
+                          {stats.totalDeliveries}
+                        </p>
                       </div>
                     </div>
                   )}

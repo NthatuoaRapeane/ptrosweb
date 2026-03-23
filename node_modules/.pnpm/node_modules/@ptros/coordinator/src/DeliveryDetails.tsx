@@ -575,7 +575,7 @@ export default function DeliveryDetails() {
               {carrierProfile.licensePlate && (
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 uppercase">
-                    Vehicle ID
+                    License Plate
                   </label>
                   <p className="mt-1 text-sm text-gray-800">
                     {carrierProfile.licensePlate}

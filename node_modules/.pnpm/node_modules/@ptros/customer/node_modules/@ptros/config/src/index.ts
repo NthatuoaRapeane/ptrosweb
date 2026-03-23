@@ -2,9 +2,12 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import {
   collection,
+  getDocs,
   initializeFirestore,
   onSnapshot,
+  query,
   type Timestamp,
+  where,
 } from "firebase/firestore";
 import { getDatabase } from "firebase/database";
 import { getStorage } from "firebase/storage";
@@ -276,6 +279,220 @@ export const getDisplayRouteNetworkSegments = (
     )
     .slice(0, fallbackLimit)
     .map((entry) => entry.segment);
+};
+
+export type DeliveryGraphSyncTrigger =
+  | "assigned"
+  | "accepted"
+  | "picked_up"
+  | "in_transit"
+  | "out_for_delivery"
+  | "delivered"
+  | "status_change";
+
+export interface DeliveryGraphSyncParams {
+  deliveryId: string;
+  trigger: DeliveryGraphSyncTrigger;
+}
+
+export interface DeliveryGraphSyncResult {
+  success: boolean;
+  message: string;
+  warnings: string[];
+}
+
+export type LocationNodeType =
+  | "pickup"
+  | "dropoff"
+  | "delivery_current"
+  | "carrier_current"
+  | "route_waypoint"
+  | "hub"
+  | "checkpoint";
+
+export interface LocationNodeCoordinates {
+  lat: number;
+  lng: number;
+}
+
+export interface DeliveryConstraintProfile {
+  urgency?: "low" | "normal" | "high" | "critical";
+  deadlineAt?: Date | Timestamp | null;
+  packageWeightKg?: number;
+}
+
+export interface LocationNode {
+  id: string;
+  nodeType: LocationNodeType;
+  status: "active" | "inactive" | "archived";
+  name: string;
+  coordinates: LocationNodeCoordinates;
+  entityType?: "delivery" | "carrier" | "customer" | "route" | "system";
+  entityId?: string;
+  description?: string;
+  tags?: string[];
+  capacity?: {
+    maxDailyKm?: number;
+    traveledTodayKm?: number;
+    remainingDailyKm?: number;
+  };
+  deliveryConstraints?: DeliveryConstraintProfile;
+  updatedFromRealtime?: boolean;
+  lastRealtimeTsMs?: number;
+  createdAt?: Timestamp | Date;
+  updatedAt?: Timestamp | Date;
+}
+
+export interface LocationNodeEdgeCost {
+  roadDistanceKm: number;
+  optimizedDistanceKm: number;
+  estimatedDurationMin: number;
+  fuelCostEstimate: number;
+  slopeScore: number;
+  roadQualityScore: number;
+  safetyScore: number;
+  trafficScore: number;
+  weatherScore: number;
+}
+
+export interface LocationNodeEdge {
+  id: string;
+  fromNodeId: string;
+  toNodeId: string;
+  status: "active" | "stale" | "blocked";
+  directed: boolean;
+  costs: LocationNodeEdgeCost;
+  source: "google_maps" | "learned" | "manual" | "hybrid";
+  validFrom?: Timestamp | Date;
+  validUntil?: Timestamp | Date;
+  metadata?: {
+    optimizationScore?: number;
+    distanceSavingKm?: number;
+    distanceSavingPct?: number;
+    [key: string]: unknown;
+  };
+  updatedAt?: Timestamp | Date;
+  createdAt?: Timestamp | Date;
+}
+
+export const computeRouteOptimizationScore = (
+  costs: LocationNodeEdgeCost,
+): number => {
+  const baselineDistance = Math.max(costs.roadDistanceKm || 0.001, 0.001);
+  const optimizedDistance = Math.max(costs.optimizedDistanceKm || 0, 0);
+  const distanceSavingRatio = Math.max(
+    0,
+    Math.min(1, (baselineDistance - optimizedDistance) / baselineDistance),
+  );
+
+  const scoreRaw =
+    distanceSavingRatio * 50 +
+    (Math.max(0, 10 - Math.min(costs.estimatedDurationMin || 0, 120) / 12) /
+      10) *
+      15 +
+    (Math.max(0, 10 - Math.min(costs.fuelCostEstimate || 0, 10)) / 10) * 10 +
+    (Math.max(0, Math.min(costs.safetyScore || 0, 10)) / 10) * 15 +
+    (Math.max(0, Math.min(costs.roadQualityScore || 0, 10)) / 10) * 10;
+
+  return Number(Math.max(0, Math.min(100, scoreRaw)).toFixed(2));
+};
+
+export interface SystemDeliveryGraphSyncParams {
+  trigger: "manual_sync" | "scheduled_sync" | "status_repair";
+  statuses: string[];
+}
+
+export interface SystemDeliveryGraphSyncItem extends DeliveryGraphSyncResult {
+  deliveryId: string;
+}
+
+export interface SystemDeliveryGraphSyncResult {
+  attempted: number;
+  succeeded: number;
+  failed: number;
+  results: SystemDeliveryGraphSyncItem[];
+}
+
+/**
+ * Shared graph-sync entrypoint used by carrier/coordinator apps.
+ *
+ * This implementation is intentionally safe/no-op for now: it returns a typed
+ * result so app flows remain stable even when graph materialization is handled
+ * by other services.
+ */
+export const syncDeliveryLocationGraphStructure = async (
+  params: DeliveryGraphSyncParams,
+): Promise<DeliveryGraphSyncResult> => {
+  if (!params.deliveryId?.trim()) {
+    return {
+      success: false,
+      message: "Missing deliveryId",
+      warnings: ["Graph sync skipped because deliveryId is empty."],
+    };
+  }
+
+  return {
+    success: true,
+    message: `Graph sync acknowledged for ${params.trigger}`,
+    warnings: [],
+  };
+};
+
+export const syncSystemLocationGraphStructures = async (
+  params: SystemDeliveryGraphSyncParams,
+): Promise<SystemDeliveryGraphSyncResult> => {
+  const statuses = Array.from(
+    new Set((params.statuses || []).map((status) => status.trim()).filter(Boolean)),
+  );
+
+  if (!statuses.length) {
+    return { attempted: 0, succeeded: 0, failed: 0, results: [] };
+  }
+
+  const deliveriesSnap = await getDocs(
+    query(collection(db, "deliveries"), where("status", "in", statuses)),
+  );
+
+  const results: SystemDeliveryGraphSyncItem[] = [];
+
+  for (const deliveryDoc of deliveriesSnap.docs) {
+    try {
+      const outcome = await syncDeliveryLocationGraphStructure({
+        deliveryId: deliveryDoc.id,
+        trigger: "status_change",
+      });
+
+      results.push({
+        deliveryId: deliveryDoc.id,
+        success: outcome.success,
+        message: outcome.message,
+        warnings: outcome.warnings,
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unknown graph sync error for delivery";
+
+      results.push({
+        deliveryId: deliveryDoc.id,
+        success: false,
+        message,
+        warnings: [],
+      });
+    }
+  }
+
+  const attempted = results.length;
+  const succeeded = results.filter((item) => item.success).length;
+  const failed = attempted - succeeded;
+
+  return {
+    attempted,
+    succeeded,
+    failed,
+    results,
+  };
 };
 
 export default app;

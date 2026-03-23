@@ -341,7 +341,7 @@ export default function CarrierDetails() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-500">
-                  Vehicle ID
+                  License Plate
                 </label>
                 <p className="mt-2 text-gray-800 font-mono">
                   {carrier.licensePlate}
